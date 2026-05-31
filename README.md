@@ -1,6 +1,8 @@
 # VocabFiction
 
-> 一个好故事驱动的英语词汇自然积累工具 — 读小说，学单词，无需背。
+[English](README.md) | [中文](README.zh-CN.md)
+
+> A story-driven English vocabulary acquisition tool — read novels, learn words, no memorization required.
 
 VocabFiction turns novels into interactive chat-fiction episodes where English vocabulary words appear naturally in context. Built with Expo and React Native for iOS and Android.
 

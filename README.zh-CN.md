@@ -1,5 +1,7 @@
 # VocabFiction
 
+[English](README.md) | [中文](README.zh-CN.md)
+
 > 一个好故事驱动的英语词汇自然积累工具 — 读小说，学单词，无需背。
 
 VocabFiction 将小说转化为对话体英语阅读体验，目标词汇在故事中自然出现。基于 Expo 和 React Native 构建，支持 iOS 和 Android。
