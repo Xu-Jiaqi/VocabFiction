@@ -1,0 +1,247 @@
+{
+  "meta": {
+    "ep": 2,
+    "title": "The Argument at the Next Table",
+    "kind": "main"
+  },
+  "messages": [
+    {
+      "type": "narration",
+      "text": "This conflict behind me... I can't un-hear it.",
+      "marks": [
+        { "word": "conflict", "index": 1, "definition": "冲突", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "My novel is suddenly very uninteresting.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I can't focus on anything except the voices.",
+      "marks": [
+        { "word": "focus", "index": 2, "definition": "集中", "is_new": false }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "Sousuke. Do you understand what I'm saying?",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Sousuke",
+      "text": "Anna, just... wait.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "Wait? Hana's flight is TONIGHT. If you don't go now she'll leave thinking you don't care!",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Hana. Kuremiya Hana. Transfer student. Arrived in May.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Instantly the most talked-about person in our grade.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "She's leaving? Already?",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Sousuke",
+      "text": "She said goodbye. With a smile. There's no point.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "...you dense idiot.",
+      "marks": [
+        { "word": "dense", "index": 1, "definition": "迟钝的", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Agreed.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "She's not the type to confront people about what she wants.",
+      "marks": [
+        { "word": "confront", "index": 5, "definition": "面对", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "She smiles. Says it's fine. Then cries alone.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "You've been making her laugh since she got here. Day one. Remember?",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "You called her out during self-intros. Whatever that was about.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Sousuke",
+      "text": "She thought I groped her on the train. I wasn't.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "POINT IS. She likes you. It's so evident a stranger on the street could tell.",
+      "marks": [
+        { "word": "evident", "index": 7, "definition": "明显的", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "And you like her too.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Sousuke",
+      "text": "...Yeah. I do.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "Then go.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "Don't abandon this because you're scared.",
+      "marks": [
+        { "word": "abandon", "index": 1, "definition": "放弃", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Sousuke",
+      "text": "But you and I... we've always been...",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "We were kids, Sousuke.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "What matters is right in front of you.",
+      "marks": [
+        { "word": "matters", "index": 1, "definition": "重要", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "Go get her. That's an order from your childhood friend.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Booth creaks. Footsteps.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Sousuke",
+      "text": "...Thank you, Anna.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Door swings shut. Silence. Heavy silence.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I don't dare breathe.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Whatever comes next... was never meant to have an audience.",
+      "marks": [
+        { "word": "audience", "index": 9, "definition": "听众", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "Don't apologize, you idiot.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Those words. Not meant for anyone. But I heard.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "And then — the sound of a glass being lifted.",
+      "marks": []
+    }
+  ],
+  "vocab": [
+    { "word": "conflict", "definition": "冲突", "is_new": true },
+    { "word": "focus", "definition": "集中", "is_new": false },
+    { "word": "dense", "definition": "迟钝的", "is_new": true },
+    { "word": "confront", "definition": "面对", "is_new": true },
+    { "word": "evident", "definition": "明显的", "is_new": true },
+    { "word": "abandon", "definition": "放弃", "is_new": true },
+    { "word": "matters", "definition": "重要", "is_new": true },
+    { "word": "audience", "definition": "听众", "is_new": true }
+  ]
+}

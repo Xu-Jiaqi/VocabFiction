@@ -1,0 +1,247 @@
+{
+  "meta": {
+    "ep": 3,
+    "title": "The Glass",
+    "kind": "main"
+  },
+  "messages": [
+    {
+      "type": "narration",
+      "text": "This is awkward.",
+      "marks": [
+        { "word": "awkward", "index": 2, "definition": "尴尬的", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "I should not be watching this.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "But what's the protocol?",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "\"Excuse me, I heard you sacrifice your happiness — ketchup please?\"",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "No. Stay invisible. That's my specialty.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Through the gap between booths — I can see everything.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Anna stands frozen, staring at the door Sousuke bolted through.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "No performance now. Just the raw aftermath.",
+      "marks": [
+        { "word": "aftermath", "index": 6, "definition": "后果", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "The decision her mouth made while her heart screamed the opposite.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "She sits down. Not her seat. His.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "She reaches across the table.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Her hand closes around Sousuke's glass.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "The one he was drinking from. Minutes ago.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "She lifts it with both hands. Like something fragile.",
+      "marks": [
+        { "word": "fragile", "index": 8, "definition": "脆弱的", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Don't. Don't do something that sad.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "She puts the straw to her lips. Drinks.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "An indirect kiss.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "With a guy sprinting toward another girl.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "A ritual of acceptance. Or surrender.",
+      "marks": [
+        { "word": "ritual", "index": 1, "definition": "仪式", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "I'm not smart enough to know which.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Just the most bittersweet thing I've ever seen.",
+      "marks": [
+        { "word": "bittersweet", "index": 3, "definition": "苦乐参半的", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Her eyes lift. Through the gap. Straight into mine.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Oh no.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "One frozen moment. Two statues in a restaurant.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Anna's cheeks go pink, then crimson.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Her eyes widen with the slow-motion horror of recognition.",
+      "marks": [
+        { "word": "recognition", "index": 8, "definition": "认出", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "It's now painfully evident she's seen everything.",
+      "marks": [
+        { "word": "evident", "index": 3, "definition": "明显的", "is_new": false }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "PFFFT— A brown explosion across her table.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Anna Yanami — cutest girl in class — coughing, choking on coffee.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Making sounds no grace could salvage.",
+      "marks": [
+        { "word": "grace", "index": 3, "definition": "优雅", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Decision time. Born of pure cowardice.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I raise my soda.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Attempt to look absorbed in the menu. Which is upside down.",
+      "marks": [
+        { "word": "absorbed", "index": 3, "definition": "全神贯注的", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "I try to whistle. I've never whistled in my life.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "The result sounds like a medical episode.",
+      "marks": [
+        { "word": "episode", "index": 6, "definition": "事件, 插曲", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Footsteps approach. A shadow falls across my table.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "Hey.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "You're Nukumizu, right? Class C?",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "This is the moment my quiet invisible life ends.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Kazuhiko",
+      "text": "...Nukumizu who?",
+      "marks": []
+    }
+  ],
+  "vocab": [
+    { "word": "awkward", "definition": "尴尬的", "is_new": true },
+    { "word": "aftermath", "definition": "后果", "is_new": true },
+    { "word": "fragile", "definition": "脆弱的", "is_new": true },
+    { "word": "ritual", "definition": "仪式", "is_new": true },
+    { "word": "bittersweet", "definition": "苦乐参半的", "is_new": true },
+    { "word": "recognition", "definition": "认出", "is_new": true },
+    { "word": "evident", "definition": "明显的", "is_new": false },
+    { "word": "grace", "definition": "优雅", "is_new": true },
+    { "word": "absorbed", "definition": "全神贯注的", "is_new": true },
+    { "word": "episode", "definition": "事件, 插曲", "is_new": true }
+  ]
+}

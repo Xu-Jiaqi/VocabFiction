@@ -1,0 +1,173 @@
+{
+  "meta": {
+    "ep": 1,
+    "title": "A Quiet Afternoon",
+    "kind": "main"
+  },
+  "messages": [
+    {
+      "type": "narration",
+      "text": "The semester is finally over.",
+      "marks": [
+        { "word": "semester", "index": 1, "definition": "学期", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "I bike to a family restaurant in the next town.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Self-service drinks. Extra-large fries.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "This — right here — is real leisure.",
+      "marks": [
+        { "word": "leisure", "index": 7, "definition": "闲暇", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Not the loud type the popular kids need an audience for. Just a story and me.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Every page I can anticipate. Every sentence I can appreciate.",
+      "marks": [
+        { "word": "anticipate", "index": 4, "definition": "期待", "is_new": true },
+        { "word": "appreciate", "index": 9, "definition": "欣赏", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Nobody asking why I'm smiling.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Cola. Fries. Light novel. The unholy trinity.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "My mood lifts just looking at the cover.",
+      "marks": [
+        { "word": "mood", "index": 1, "definition": "心情", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "I bite a fry. Open the book.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "The heroine tells her useless brother he deserves love. Pure wish-fulfillment.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "But that's the point.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "The real world doesn't offer unconditional acceptance.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "The real world offers exams. Social hierarchies. Not knowing where to stand in the cafeteria.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "So I focus.",
+      "marks": [
+        { "word": "focus", "index": 2, "definition": "集中", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Each page I turn is a step further from reality.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I consume fries. Methodically. One by one.",
+      "marks": [
+        { "word": "consume", "index": 1, "definition": "消耗, 吃", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Kurumi delivers a line that would make any lonely brother weep.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Junk food plus emotional manipulation. A winning formula.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Everything is perfect.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Anna",
+      "text": "GO AFTER HER OR SHE'S LEAVING FOR ENGLAND!",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "My fry freezes mid-air.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I know that voice.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Anna Yanami. One of the cutest girls in our grade.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Sits in the center of our classroom. Lives in a world I never enter.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Right behind my booth.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I lower my fry.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "My quiet afternoon. Over.",
+      "marks": []
+    }
+  ],
+  "vocab": [
+    { "word": "semester", "definition": "学期", "is_new": true },
+    { "word": "leisure", "definition": "闲暇", "is_new": true },
+    { "word": "anticipate", "definition": "期待", "is_new": true },
+    { "word": "appreciate", "definition": "欣赏", "is_new": true },
+    { "word": "mood", "definition": "心情", "is_new": true },
+    { "word": "focus", "definition": "集中", "is_new": true },
+    { "word": "consume", "definition": "消耗, 吃", "is_new": true }
+  ]
+}
