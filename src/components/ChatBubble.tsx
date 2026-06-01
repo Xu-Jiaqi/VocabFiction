@@ -9,18 +9,20 @@ interface ChatBubbleProps {
   workId: string;
   fontScale: number;
   onWordTap?: (word: string, definition: string) => void;
+  onAvatarPress?: (characterName: string) => void;
+  avatarVersion?: number;
 }
 
-export function ChatBubble({ message, workId, fontScale, onWordTap }: ChatBubbleProps) {
+export function ChatBubble({ message, workId, fontScale, onWordTap, onAvatarPress, avatarVersion }: ChatBubbleProps) {
   const isLeft = message.side === 'left';
 
   return (
     <View style={[styles.row, isLeft ? styles.rowLeft : styles.rowRight]}>
       <View style={styles.content}>
         <View style={[styles.nameRow, isLeft ? styles.nameRowLeft : styles.nameRowRight]}>
-          {isLeft && <ChatAvatar workId={workId} name={message.name} side="left" />}
+          {isLeft && <ChatAvatar workId={workId} name={message.name} side="left" onPress={onAvatarPress ? () => onAvatarPress(message.name) : undefined} avatarVersion={avatarVersion} />}
           <Text style={[styles.name, { fontSize: 11 * fontScale }]}>{message.name}</Text>
-          {!isLeft && <ChatAvatar workId={workId} name={message.name} side="right" />}
+          {!isLeft && <ChatAvatar workId={workId} name={message.name} side="right" onPress={onAvatarPress ? () => onAvatarPress(message.name) : undefined} avatarVersion={avatarVersion} />}
         </View>
         <View style={[styles.bubble, isLeft ? styles.bubbleLeft : styles.bubbleRight]}>
           <VocabText text={message.text} marks={message.marks} fontSize={15 * fontScale} onWordTap={onWordTap} />

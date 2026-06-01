@@ -8,14 +8,16 @@ interface MessageRendererProps {
   fontScale: number;
   onWordTap?: (word: string, definition: string) => void;
   onExpandWord?: (word: string) => void;
+  onAvatarPress?: (characterName: string) => void;
+  avatarVersion?: number;
 }
 
-export function MessageRenderer({ message, workId, fontScale, onWordTap, onExpandWord }: MessageRendererProps) {
+export function MessageRenderer({ message, workId, fontScale, onWordTap, onExpandWord, onAvatarPress, avatarVersion }: MessageRendererProps) {
   if (message.type === 'narration') {
     return <Narration text={message.text} marks={message.marks} fontScale={fontScale} onWordTap={onWordTap} />;
   }
   if (message.type === 'dialogue') {
-    return <ChatBubble message={message} workId={workId} fontScale={fontScale} onWordTap={onWordTap} />;
+    return <ChatBubble message={message} workId={workId} fontScale={fontScale} onWordTap={onWordTap} onAvatarPress={onAvatarPress} avatarVersion={avatarVersion} />;
   }
   return null;
 }

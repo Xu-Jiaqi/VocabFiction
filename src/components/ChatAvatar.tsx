@@ -1,28 +1,53 @@
-import { View, Text, Image, StyleSheet } from 'react-native';
+import { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors } from '@/src/theme/colors';
-import { getAvatarSource } from '@/src/services/character-loader';
+import { getAvatarSource, getCustomAvatarUri, checkCustomAvatarExists } from '@/src/services/character-loader';
 
 interface ChatAvatarProps {
   workId: string;
   name: string;
   side: 'left' | 'right';
+  onPress?: () => void;
+  /** Increment to force re-check of custom avatars */
+  avatarVersion?: number;
 }
 
-export function ChatAvatar({ workId, name, side }: ChatAvatarProps) {
-  const avatarSource = getAvatarSource(workId, name);
+export function ChatAvatar({ workId, name, side, onPress, avatarVersion }: ChatAvatarProps) {
+  const builtinSource = getAvatarSource(workId, name);
+  const [customUri, setCustomUri] = useState<string | null>(null);
+
+  useEffect(() => {
+    const uri = getCustomAvatarUri(workId, name);
+    if (uri) {
+      checkCustomAvatarExists(uri).then(exists => {
+        setCustomUri(exists ? uri : null);
+      }).catch(() => setCustomUri(null));
+    } else {
+      setCustomUri(null);
+    }
+  }, [workId, name, avatarVersion]);
+
+  const source = customUri ? { uri: customUri } : builtinSource;
+
+  const content = source ? (
+    <Image source={source} style={styles.avatar} />
+  ) : (
+    <View style={styles.placeholder}>
+      <Text style={styles.placeholderText}>
+        {name.charAt(0).toUpperCase()}
+      </Text>
+    </View>
+  );
 
   return (
-    <View style={[styles.container, side === 'right' && styles.containerRight]}>
-      {avatarSource ? (
-        <Image source={avatarSource} style={styles.avatar} />
-      ) : (
-        <View style={styles.placeholder}>
-          <Text style={styles.placeholderText}>
-            {name.charAt(0).toUpperCase()}
-          </Text>
-        </View>
-      )}
-    </View>
+    <TouchableOpacity
+      style={[styles.container, side === 'right' && styles.containerRight]}
+      onPress={onPress}
+      activeOpacity={onPress ? 0.7 : 1}
+      disabled={!onPress}
+    >
+      {content}
+    </TouchableOpacity>
   );
 }
 

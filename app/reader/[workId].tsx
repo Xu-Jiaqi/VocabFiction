@@ -16,6 +16,8 @@ import { AnimatedMessage } from '@/src/components/AnimatedMessage';
 import { DictionaryPanel } from '@/src/components/DictionaryPanel';
 import { PlainTextReader } from '@/src/components/PlainTextReader';
 import { loadPlainText } from '@/src/services/episode-loader';
+import { saveCustomAvatar } from '@/src/services/character-loader';
+import * as ImagePicker from 'expo-image-picker';
 import type { Episode } from '@/src/models/episode';
 import type { Work } from '@/src/models/work';
 
@@ -34,6 +36,7 @@ export default function ReaderScreen() {
   const [loading, setLoading] = useState(true);
   const [episodeDone, setEpisodeDone] = useState(false);
   const [revealSpacer, setRevealSpacer] = useState(0); // temp spacer to enable pre-render scroll
+  const [avatarVersion, setAvatarVersion] = useState(0);
 
   // Vocab popup — positioned near tapped word
   const [vocabPopup, setVocabPopup] = useState<{
@@ -282,6 +285,19 @@ export default function ReaderScreen() {
     }
   }, [showDictPanel, smoothScrollTo]);
 
+  const handleAvatarPress = useCallback(async (characterName: string) => {
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+    });
+    if (!result.canceled && result.assets?.[0]) {
+      await saveCustomAvatar(workId, characterName, result.assets[0].uri);
+      setAvatarVersion(v => v + 1);
+    }
+  }, [workId]);
+
   const goToEpisode = useCallback(async (epNum: number) => {
     if (!work || epNum < 1 || epNum > work.total_eps) return;
     await updateProgress(workId, { current_ep: currentEp, current_msg: currentMsg });
@@ -393,7 +409,7 @@ export default function ReaderScreen() {
           onContentSizeChange={(w, h) => {
             contentHeight.current = h;
             // Initial scroll to latest messages on re-enter
-            if (!hasInitialScrolled.current && currentMsg > 0 && !episodeDone) {
+            if (!hasInitialScrolled.current && currentMsg > 0) {
               hasInitialScrolled.current = true;
               const target = Math.max(0, h - layoutHeight.current);
               setTimeout(() => scrollViewRef.current?.scrollTo({ y: target, animated: false }), 50);
@@ -462,7 +478,8 @@ export default function ReaderScreen() {
             visibleMessages.map((msg, i) => (
               <AnimatedMessage key={`msg-${i}`}>
                 <MessageRenderer message={msg} workId={workId} fontScale={fontScale}
-                  onWordTap={handleWordTapped} onExpandWord={handleExpandWord} />
+                  onWordTap={handleWordTapped} onExpandWord={handleExpandWord}
+                  onAvatarPress={handleAvatarPress} avatarVersion={avatarVersion} />
               </AnimatedMessage>
             ))
           )}
