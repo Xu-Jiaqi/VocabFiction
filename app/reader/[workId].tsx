@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated, Alert,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors } from '@/src/theme/colors';
@@ -16,7 +16,7 @@ import { AnimatedMessage } from '@/src/components/AnimatedMessage';
 import { DictionaryPanel } from '@/src/components/DictionaryPanel';
 import { PlainTextReader } from '@/src/components/PlainTextReader';
 import { loadPlainText } from '@/src/services/episode-loader';
-import { saveCustomAvatar } from '@/src/services/character-loader';
+import { saveCustomAvatar, deleteCustomAvatar, getCustomAvatarUri, checkCustomAvatarExists } from '@/src/services/character-loader';
 import * as ImagePicker from 'expo-image-picker';
 import type { Episode } from '@/src/models/episode';
 import type { Work } from '@/src/models/work';
@@ -286,16 +286,29 @@ export default function ReaderScreen() {
   }, [showDictPanel, smoothScrollTo]);
 
   const handleAvatarPress = useCallback(async (characterName: string) => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-    if (!result.canceled && result.assets?.[0]) {
-      await saveCustomAvatar(workId, characterName, result.assets[0].uri);
-      setAvatarVersion(v => v + 1);
+    const hasCustom = await checkCustomAvatarExists(getCustomAvatarUri(workId, characterName));
+    const options: { text: string; onPress?: () => void }[] = [
+      { text: '自定义头像', onPress: async () => {
+        const result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ['images'],
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 0.8,
+        });
+        if (!result.canceled && result.assets?.[0]) {
+          await saveCustomAvatar(workId, characterName, result.assets[0].uri);
+          setAvatarVersion(v => v + 1);
+        }
+      }},
+    ];
+    if (hasCustom) {
+      options.unshift({ text: '恢复默认头像', onPress: async () => {
+        await deleteCustomAvatar(workId, characterName);
+        setAvatarVersion(v => v + 1);
+      }});
     }
+    options.push({ text: '取消' });
+    Alert.alert('头像设置', undefined, options);
   }, [workId]);
 
   const goToEpisode = useCallback(async (epNum: number) => {

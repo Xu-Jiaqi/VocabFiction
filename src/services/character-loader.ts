@@ -1,5 +1,5 @@
 import type { ImageSourcePropType } from 'react-native';
-import { Paths, File, Directory } from 'expo-file-system';
+import { copyAsync, makeDirectoryAsync, getInfoAsync, deleteAsync } from 'expo-file-system/legacy';
 
 export interface CharacterData {
   protagonist: string;
@@ -16,7 +16,6 @@ const builtinCharacters: Record<string, () => CharacterData> = {
 
 /**
  * Static registry of built-in avatar images.
- * Metro bundles these PNGs at build time.
  */
 const builtinAvatars: Record<string, Record<string, () => ImageSourcePropType>> = {
   makeine: {
@@ -27,41 +26,61 @@ const builtinAvatars: Record<string, Record<string, () => ImageSourcePropType>> 
 };
 
 /**
- * Directory where custom avatars are stored.
+ * Custom avatar filename overrides (per work, per character), separate from built-in data.
  */
-function customAvatarDir(): Directory {
-  return new Directory(Paths.document, 'avatars');
+const customFilenames: Record<string, Record<string, string>> = {};
+
+function getCustomFilename(workId: string, characterName: string): string | null {
+  return customFilenames[workId]?.[characterName] ?? null;
 }
 
-/**
- * Get the custom avatar URI for a character, or null if none.
- */
+function setCustomFilename(workId: string, characterName: string, filename: string): void {
+  if (!customFilenames[workId]) customFilenames[workId] = {};
+  customFilenames[workId][characterName] = filename;
+}
+
+function clearCustomFilename(workId: string, characterName: string): void {
+  if (customFilenames[workId]) {
+    delete customFilenames[workId][characterName];
+  }
+}
+
+// Use the legacy documentDirectory
+let docDir: string | null = null;
+function getDocDir(): string {
+  if (docDir) return docDir;
+  const { documentDirectory } = require('expo-file-system/legacy');
+  docDir = documentDirectory;
+  return docDir || '';
+}
+
 export function getCustomAvatarUri(workId: string, characterName: string): string {
-  const chars = loadCharacters(workId);
-  if (!chars) return '';
-  const filename = chars.avatars[characterName];
+  const filename = getCustomFilename(workId, characterName);
   if (!filename) return '';
-  const dir = customAvatarDir();
-  return new Directory(dir, workId, filename).uri;
+  return `${getDocDir()}avatars/${workId}/${filename}`;
 }
 
-/**
- * Check if a custom avatar file exists.
- */
 export async function checkCustomAvatarExists(uri: string): Promise<boolean> {
+  if (!uri) return false;
   try {
-    const file = new File(uri);
-    const info = await file.info();
+    const info = await getInfoAsync(uri);
     return info.exists;
   } catch {
     return false;
   }
 }
 
-/**
- * Save a custom avatar image for a character.
- * Copies the picked image to the avatars directory.
- */
+export async function deleteCustomAvatar(
+  workId: string,
+  characterName: string,
+): Promise<void> {
+  const uri = getCustomAvatarUri(workId, characterName);
+  if (uri) {
+    try { await deleteAsync(uri); } catch { /* doesn't exist */ }
+  }
+  clearCustomFilename(workId, characterName);
+}
+
 export async function saveCustomAvatar(
   workId: string,
   characterName: string,
@@ -72,32 +91,24 @@ export async function saveCustomAvatar(
 
   const ext = sourceUri.split('.').pop()?.toLowerCase() || 'png';
   const filename = `${characterName.replace(/\s+/g, '_')}.${ext}`;
+  setCustomFilename(workId, characterName, filename);
 
-  // Update the mapping
-  chars.avatars[characterName] = filename;
+  const dir = `${getDocDir()}avatars/${workId}/`;
+  await makeDirectoryAsync(dir, { intermediates: true });
 
-  const dir = new Directory(customAvatarDir(), workId);
-  try { await dir.create(); } catch { /* already exists */ }
+  const dest = `${dir}${filename}`;
+  try { await deleteAsync(dest); } catch { /* doesn't exist yet */ }
+  await copyAsync({ from: sourceUri, to: dest });
 
-  const dest = new File(dir, filename);
-  const sourceFile = new File(sourceUri);
-  await sourceFile.copy(dest);
-
-  return dest.uri;
+  return dest;
 }
 
-/**
- * Load character data (protagonist + avatar filename mapping) for a work.
- */
 export function loadCharacters(workId: string): CharacterData | null {
   const loader = builtinCharacters[workId];
   if (!loader) return null;
   return loader();
 }
 
-/**
- * Get the protagonist's name for a work.
- */
 export function getProtagonist(workId: string): string | null {
   const chars = loadCharacters(workId);
   return chars?.protagonist ?? null;
@@ -105,7 +116,7 @@ export function getProtagonist(workId: string): string | null {
 
 /**
  * Get the avatar image source for a character by name.
- * Returns the built-in source (custom avatars are resolved asynchronously).
+ * Built-in mapping is never mutated, so restoring custom avatar returns the original.
  */
 export function getAvatarSource(
   workId: string,

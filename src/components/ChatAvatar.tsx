@@ -17,10 +17,11 @@ export function ChatAvatar({ workId, name, side, onPress, avatarVersion }: ChatA
   const [customUri, setCustomUri] = useState<string | null>(null);
 
   useEffect(() => {
-    const uri = getCustomAvatarUri(workId, name);
-    if (uri) {
-      checkCustomAvatarExists(uri).then(exists => {
-        setCustomUri(exists ? uri : null);
+    const baseUri = getCustomAvatarUri(workId, name);
+    if (baseUri) {
+      checkCustomAvatarExists(baseUri).then(exists => {
+        // Cache-busting query param forces Image reload when avatarVersion changes
+        setCustomUri(exists ? `${baseUri}?v=${avatarVersion ?? 0}` : null);
       }).catch(() => setCustomUri(null));
     } else {
       setCustomUri(null);
