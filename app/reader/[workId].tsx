@@ -287,7 +287,7 @@ export default function ReaderScreen() {
 
   const handleAvatarPress = useCallback(async (characterName: string) => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ['images'],
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,

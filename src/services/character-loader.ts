@@ -77,7 +77,7 @@ export async function saveCustomAvatar(
   chars.avatars[characterName] = filename;
 
   const dir = new Directory(customAvatarDir(), workId);
-  await dir.create();
+  try { await dir.create(); } catch { /* already exists */ }
 
   const dest = new File(dir, filename);
   const sourceFile = new File(sourceUri);
