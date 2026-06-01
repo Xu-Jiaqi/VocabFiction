@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated, PanResponder,
+  View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Animated,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors } from '@/src/theme/colors';
@@ -19,7 +19,8 @@ import { loadPlainText } from '@/src/services/episode-loader';
 import type { Episode } from '@/src/models/episode';
 import type { Work } from '@/src/models/work';
 
-const TAP_THRESHOLD = 8;
+const TAP_THRESHOLD = 5;
+const SWIPE_THRESHOLD = 6;
 const CARD_HEIGHT = 100;
 
 export default function ReaderScreen() {
@@ -32,6 +33,7 @@ export default function ReaderScreen() {
   const [currentMsg, setCurrentMsg] = useState(0);
   const [loading, setLoading] = useState(true);
   const [episodeDone, setEpisodeDone] = useState(false);
+  const [revealSpacer, setRevealSpacer] = useState(0); // temp spacer to enable pre-render scroll
 
   // Vocab popup — positioned near tapped word
   const [vocabPopup, setVocabPopup] = useState<{
@@ -57,41 +59,65 @@ export default function ReaderScreen() {
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const wordWasTapped = useRef(false);
   const scrollOffset = useRef(0);
+  const lastScrollOffset = useRef(0);
   const contentHeight = useRef(0);
   const layoutHeight = useRef(0);
   const scrollFrame = useRef<number | null>(null);
+  const isAutoScrolling = useRef(false);
   const screenAnim = useRef(new Animated.Value(Dimensions.get('window').width)).current;
   const [fontScale, setFontScale] = useState(1);
   const [readingMode, setReadingMode] = useState<ReadingMode>('chat');
-  const panelHeight = useRef(new Animated.Value(1)).current; // 1 = open, 0 = closed
-  const panelOpen = useRef(true);
-  const PANEL_FULL = 300; // max height of collapsible vocab area
+  // Sidebar state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const sidebarAnim = useRef(new Animated.Value(0)).current;
+  const overlayAnim = useRef(new Animated.Value(0)).current;
+  // Bar visibility: 1 = visible, 0 = hidden
+  const barsOpacity = useRef(new Animated.Value(0)).current;
+  const barsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const isRevealing = useRef(false);
+  const pendingRevealScroll = useRef(0);
+  const bottomBarsShown = useRef(false);
+  const scrollDir = useRef<'up'|'down'|null>(null);
+  const dirChangeAt = useRef(0);
 
-  const panelPan = useRef(PanResponder.create({
-    onStartShouldSetPanResponder: () => true,
-    onMoveShouldSetPanResponder: (_, g) => Math.abs(g.dy) > 5,
-    onPanResponderMove: (_, g) => {
-      // g.dy > 0 = finger moving down (closing). g.dy < 0 = finger moving up (opening)
-      const base = panelOpen.current ? 1 : 0;
-      const change = -g.dy / PANEL_FULL;
-      panelHeight.setValue(Math.max(0, Math.min(1, base + change)));
-    },
-    onPanResponderRelease: (_, g) => {
-      const moved = Math.abs(g.dy);
-      if (moved < 5 && !g.dx) {
-        // Tap: toggle panel
-        const toOpen = !panelOpen.current;
-        Animated.spring(panelHeight, { toValue: toOpen ? 1 : 0, useNativeDriver: false, speed: 14, bounciness: 0 }).start();
-        panelOpen.current = toOpen;
-      } else {
-        const threshold = panelOpen.current ? 0.35 : 0.4;
-        const progress = panelOpen.current ? 1 - g.dy / PANEL_FULL : -g.dy / PANEL_FULL;
-        const snapOpen = progress > threshold;
-        Animated.spring(panelHeight, { toValue: snapOpen ? 1 : 0, useNativeDriver: false, speed: 14, bounciness: 0 }).start();
-        panelOpen.current = snapOpen;
-      }
-    },
-  })).current;
+  const barsAnimTarget = useRef<0|1>(0);
+  const topBarStyle = useMemo(() => [styles.topBarOverlay, { opacity: barsOpacity }], []);
+  const [barsActive, setBarsActive] = useState(false);
+  useEffect(() => {
+    const id = barsOpacity.addListener(({ value }) => setBarsActive(value > 0.05));
+    return () => barsOpacity.removeListener(id);
+  }, [barsOpacity]);
+
+  const showBars = useCallback(() => {
+    if (barsAnimTarget.current === 1) return; // already showing
+    barsAnimTarget.current = 1;
+    Animated.timing(barsOpacity, { toValue: 1, duration: 200, useNativeDriver: true }).start();
+    if (barsTimer.current) clearTimeout(barsTimer.current);
+    if (episodeDone) return;
+    barsTimer.current = setTimeout(() => {
+      barsAnimTarget.current = 0;
+      Animated.timing(barsOpacity, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+    }, 3000);
+  }, [barsOpacity, episodeDone]);
+
+  const hideBars = useCallback(() => {
+    if (barsAnimTarget.current === 0) return; // already hiding
+    barsAnimTarget.current = 0;
+    if (barsTimer.current) clearTimeout(barsTimer.current);
+    Animated.timing(barsOpacity, { toValue: 0, duration: 200, useNativeDriver: true }).start();
+  }, [barsOpacity]);
+
+  // Show bars initially
+  useEffect(() => { showBars(); return () => { if (barsTimer.current) clearTimeout(barsTimer.current); }; }, [showBars]);
+
+  const toggleSidebar = useCallback(() => {
+    const toOpen = !sidebarOpen;
+    setSidebarOpen(toOpen);
+    Animated.parallel([
+      Animated.timing(sidebarAnim, { toValue: toOpen ? 1 : 0, duration: 220, useNativeDriver: true }),
+      Animated.timing(overlayAnim, { toValue: toOpen ? 1 : 0, duration: 220, useNativeDriver: true }),
+    ]).start();
+  }, [sidebarOpen, sidebarAnim, overlayAnim]);
 
   // Screen entrance animation: slide in from right
   useEffect(() => {
@@ -103,20 +129,22 @@ export default function ReaderScreen() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Smooth scroll with custom ease-out duration
-  const smoothScrollTo = useCallback((targetY: number, duration = 500) => {
+  const smoothScrollTo = useCallback((targetY: number, duration = 500, onComplete?: () => void) => {
+    isAutoScrolling.current = true;
     const startY = scrollOffset.current;
     const startTime = Date.now();
     if (scrollFrame.current) cancelAnimationFrame(scrollFrame.current);
-
     const step = () => {
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
-      // ease-out cubic
       const eased = 1 - Math.pow(1 - progress, 3);
       const current = startY + (targetY - startY) * eased;
       scrollViewRef.current?.scrollTo({ y: current, animated: false });
       if (progress < 1) {
         scrollFrame.current = requestAnimationFrame(step);
+      } else {
+        isAutoScrolling.current = false;
+        onComplete?.();
       }
     };
     scrollFrame.current = requestAnimationFrame(step);
@@ -128,13 +156,11 @@ export default function ReaderScreen() {
     setVocabPopup(null);
     dictAnim.setValue(0);
     setDictWord(null);
-    panelHeight.setValue(1);
-    panelOpen.current = true;
     const ep = loadEpisode(workId, epNum);
     setEpisode(ep);
     setCurrentEp(epNum);
     setCurrentMsg(msgIdx);
-    if (ep && msgIdx >= ep.messages.length) setEpisodeDone(true);
+    if (ep && msgIdx > ep.messages.length) setEpisodeDone(true);
     setLoading(false);
   }, [workId]);
 
@@ -154,68 +180,97 @@ export default function ReaderScreen() {
   }, [workId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => { prevMsgCount.current = currentMsg; }, [currentEp]);
+  // Show bars and keep them visible when episode is done
+  // Skip during tap-to-reveal sequence — bars are shown after scroll completes
+  useEffect(() => {
+    if (episodeDone && !isRevealing.current) {
+      showBars();
+    }
+  }, [episodeDone, barsOpacity, showBars]);
 
   const saveProgress = useCallback(async (msgIdx: number) => {
     try { await updateProgress(workId, { current_ep: currentEp, current_msg: msgIdx }); }
-    catch (e) { console.error('[Reader] Save progress:', e); }
+    catch (e) { console.error('[Reader] Save progress:', (e as Error)?.message ?? String(e)); }
   }, [workId, currentEp]);
 
   const handleTap = useCallback(() => {
-    // Priority: close dict panel → close vocab popup → advance message
-    if (dictWord) {
-      hideDictPanel();
-      return;
-    }
-    if (vocabPopup) {
-      setVocabPopup(null);
-      return;
-    }
+    if (dictWord) { hideDictPanel(); return; }
+    if (vocabPopup) { setVocabPopup(null); return; }
     if (!episode || episodeDone) return;
     const next = currentMsg + 1;
+    // Last message shown, one more tap to reveal end panel
+    // Sequence: scroll → render card → show bars (all sequential)
     if (next > episode.messages.length) {
-      setEpisodeDone(true);
-      saveProgress(episode.messages.length);
+      saveProgress(next);
+      isRevealing.current = true;
+      const vocabCount = episode.vocab.length;
+      const cardH = 148 + vocabCount * 33 + 56;
+      pendingRevealScroll.current = cardH;
+      setRevealSpacer(cardH); // triggers re-render → onContentSizeChange → scroll → render card
       return;
     }
     setCurrentMsg(next);
     saveProgress(next);
-    if (next >= episode.messages.length) setEpisodeDone(true);
     setTimeout(() => {
       const target = Math.max(0, contentHeight.current - layoutHeight.current + 100);
-      smoothScrollTo(target, 500);
+      smoothScrollTo(target, 500, () => {
+        barsOpacity.setValue(0);
+      });
     }, 80);
-  }, [dictWord, vocabPopup, episode, currentMsg, episodeDone, saveProgress, hideDictPanel, smoothScrollTo]);
+  }, [dictWord, vocabPopup, episode, currentMsg, episodeDone, saveProgress, hideDictPanel, smoothScrollTo, barsOpacity]);
+
+  const didScroll = useRef(false);
 
   const handleTouchStart = useCallback((e: any) => {
     touchStart.current = { x: e.nativeEvent.pageX, y: e.nativeEvent.pageY };
     wordWasTapped.current = false;
+    didScroll.current = false;
   }, []);
 
+  const handleTouchMove = useCallback((e: any) => {
+    if (!touchStart.current) return;
+    const dy = e.nativeEvent.pageY - touchStart.current.y;
+    const atBottom = episodeDone && scrollOffset.current >= Math.max(0, contentHeight.current - layoutHeight.current) - 2;
+    if (dy > SWIPE_THRESHOLD || dy < -SWIPE_THRESHOLD) {
+      if (dy > SWIPE_THRESHOLD) showBars();
+      else if (atBottom) showBars();
+      else hideBars();
+      touchStart.current = null;
+    }
+  }, [showBars, episodeDone]);
+
   const handleTouchEnd = useCallback((e: any) => {
-    if (!touchStart.current || wordWasTapped.current) return;
-    const { pageX, pageY } = e.nativeEvent;
-    if (Math.abs(pageX - touchStart.current.x) < TAP_THRESHOLD &&
-        Math.abs(pageY - touchStart.current.y) < TAP_THRESHOLD) {
+    if (!touchStart.current || wordWasTapped.current) { touchStart.current = null; return; }
+    const dy = e.nativeEvent.pageY - touchStart.current.y;
+    const dx = Math.abs(e.nativeEvent.pageX - touchStart.current.x);
+    if (dy > SWIPE_THRESHOLD) showBars();
+    else if (dy < -SWIPE_THRESHOLD) {
+      const atBottomEnd = episodeDone && scrollOffset.current >= Math.max(0, contentHeight.current - layoutHeight.current) - 2;
+      if (atBottomEnd) showBars();
+      else hideBars();
+    }
+    if (!didScroll.current && Math.abs(dx) < TAP_THRESHOLD && Math.abs(dy) < SWIPE_THRESHOLD) {
       setTimeout(() => { if (!wordWasTapped.current) handleTap(); }, 0);
     }
     touchStart.current = null;
-  }, [handleTap]);
+  }, [handleTap, showBars, episodeDone]);
 
   // Word tap → show popup at the touch position (reliable, no element measurement needed)
   const handleWordTapped = useCallback((word: string, definition: string) => {
     wordWasTapped.current = true;
+    hideBars();
     const pos = touchStart.current;
     const x = pos?.x ?? 100;
     const y = pos?.y ?? 300;
     setVocabPopup({ word, definition, x, y });
-    // If word is near top, scroll to make room for the card
     if (y < CARD_HEIGHT + 80) {
       const diff = CARD_HEIGHT + 80 - y;
       scrollViewRef.current?.scrollTo({ y: scrollOffset.current - diff, animated: false });
     }
-  }, []);
+  }, [hideBars]);
 
   const handleExpandWord = useCallback((word: string, scroll = true) => {
+    wordWasTapped.current = true;
     setVocabPopup(null);
     showDictPanel(word);
     if (scroll) {
@@ -279,42 +334,43 @@ export default function ReaderScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Animated.View style={[styles.animatedContent, { transform: [{ translateX: screenAnim }] }]}>
-      <View style={styles.statusBar}>
-        <TouchableOpacity onPress={() => router.back()}><Text style={styles.backButton}>← 书架</Text></TouchableOpacity>
-        <View style={styles.epNav}>
-          {readingMode === 'paragraph' ? (
-            <Text style={styles.epNavLabel}>Ch.1 / 1</Text>
-          ) : (
-            <>
-              <TouchableOpacity onPress={() => currentEp > 1 && goToEpisode(currentEp - 1)} disabled={currentEp <= 1}>
-                <Text style={[styles.epNavArrow, currentEp <= 1 && styles.epNavDisabled]}>‹</Text>
-              </TouchableOpacity>
-              <Text style={styles.epNavLabel}>Ep.{currentEp} / {totalEps}</Text>
-              <TouchableOpacity onPress={() => currentEp < totalEps && goToEpisode(currentEp + 1)} disabled={currentEp >= totalEps}>
-                <Text style={[styles.epNavArrow, currentEp >= totalEps && styles.epNavDisabled]}>›</Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
-        <Text style={styles.episodeLabel} numberOfLines={1}>{episode.meta.title}</Text>
-      </View>
-
+      {/* Swipe-up strip at top: detects upward swipe when bars hidden */}
+      <Animated.View
+        style={[styles.animatedContent, { transform: [{ translateX: screenAnim }] }]}>
+      {/* Progress bar: always at very top */}
       {readingMode === 'chat' && (
       <View style={styles.progressBarContainer}>
         <View style={[styles.progressFill, { width: `${Math.min(progress, 100)}%` }]} />
       </View>
       )}
 
-      {/* Dictionary panel — in normal flow, pushes content down */}
+      {/* Top bar: absolute, animated, overlays reading area */}
+      <Animated.View
+        style={topBarStyle}
+        pointerEvents={barsActive ? 'box-none' : 'none'}
+      >
+        <View style={styles.statusBar}>
+          <TouchableOpacity onPress={() => router.back()}><Text style={styles.backButton}>← 书架</Text></TouchableOpacity>
+          <Text style={styles.title} numberOfLines={1}>{episode.meta.title}</Text>
+          <View style={{ width: 50 }} />
+        </View>
+      </Animated.View>
+
+      {/* Dictionary panel */}
       {dictWord && (
         <Animated.View style={[styles.dictWrapper, {
           opacity: dictAnim,
-          transform: [{ translateY: dictAnim.interpolate({ inputRange: [0, 1], outputRange: [-30, 0] }) }],
+          transform: [{
+            translateY: Animated.add(
+              dictAnim.interpolate({ inputRange: [0, 1], outputRange: [-30, 0] }),
+              barsOpacity.interpolate({ inputRange: [0, 1], outputRange: [0, 48] })
+            ),
+          }],
         }]}>
           <DictionaryPanel word={dictWord} onClose={hideDictPanel} />
         </Animated.View>
       )}
+
 
       {/* Chat mode */}
       {readingMode === 'chat' && (
@@ -325,12 +381,66 @@ export default function ReaderScreen() {
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          overScrollMode="always"
+          alwaysBounceVertical
           scrollEventThrottle={16}
           onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
           onTouchEnd={handleTouchEnd}
-          onContentSizeChange={(w, h) => { contentHeight.current = h; }}
+          onContentSizeChange={(w, h) => {
+            contentHeight.current = h;
+            if (pendingRevealScroll.current > 0) {
+              const cardH = pendingRevealScroll.current;
+              pendingRevealScroll.current = 0;
+              const target = Math.max(0, h - layoutHeight.current);
+              smoothScrollTo(target, 400, () => {
+                setRevealSpacer(0);
+                setEpisodeDone(true);
+                requestAnimationFrame(() => {
+                  isRevealing.current = false;
+                  showBars();
+                });
+              });
+            }
+          }}
           onLayout={(e) => { layoutHeight.current = e.nativeEvent.layout.height; }}
-          onScroll={(e) => { scrollOffset.current = e.nativeEvent.contentOffset.y; }}
+          onScroll={(e) => {
+            lastScrollOffset.current = scrollOffset.current;
+            scrollOffset.current = e.nativeEvent.contentOffset.y;
+            if (isAutoScrolling.current) return;
+            didScroll.current = true;
+            if (scrollOffset.current < lastScrollOffset.current) {
+              // Finger down → show bars
+              if (scrollDir.current !== 'down' && Math.abs(scrollOffset.current - dirChangeAt.current) > 8) {
+                scrollDir.current = 'down';
+                dirChangeAt.current = scrollOffset.current;
+                showBars();
+              }
+            } else if (scrollOffset.current > lastScrollOffset.current) {
+              // Finger up → hide bars (skip at top boundary)
+              if (scrollDir.current !== 'up' && scrollOffset.current > 4 && Math.abs(scrollOffset.current - dirChangeAt.current) > 8) {
+                scrollDir.current = 'up';
+                dirChangeAt.current = scrollOffset.current;
+                hideBars();
+              }
+            }
+            // When episode is done and scrolled to bottom, show bars with auto-hide (once per visit)
+            if (episodeDone) {
+              const maxScroll = Math.max(0, contentHeight.current - layoutHeight.current);
+              if (scrollOffset.current >= maxScroll - 8) {
+                if (!bottomBarsShown.current) {
+                  bottomBarsShown.current = true;
+                  if (barsTimer.current) clearTimeout(barsTimer.current);
+                  Animated.timing(barsOpacity, { toValue: 1, duration: 150, useNativeDriver: true }).start();
+                  barsTimer.current = setTimeout(() => {
+                    Animated.timing(barsOpacity, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+                  }, 3000);
+                }
+              } else {
+                bottomBarsShown.current = false;
+              }
+            }
+          }}
         >
           {visibleMessages.length === 0 ? (
             <View style={styles.emptyState}>
@@ -344,7 +454,25 @@ export default function ReaderScreen() {
               </AnimatedMessage>
             ))
           )}
-          <View style={{ height: episodeDone ? 80 : 200 }} />
+          {/* End panel — part of scroll content */}
+          {episodeDone && (
+            <View style={styles.endPanel}>
+              <Text style={styles.endTitle}>本集读完</Text>
+              <Text style={styles.endSubtitle}>遇见 {episode.vocab.length} 个词</Text>
+              <View style={styles.vocabListInline}>
+                {episode.vocab.map((item, i) => (
+                  <TouchableOpacity key={i} style={styles.vocabRow}
+                    onPress={() => handleExpandWord(item.word, false)}>
+                    <Text style={item.is_new ? styles.vocabRowNew : styles.vocabRowReview}>
+                      {item.word}
+                      {item.is_new && <Text style={styles.vocabRowDef}>  {item.definition}</Text>}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
+          <View style={{ height: episodeDone ? 80 : revealSpacer > 0 ? revealSpacer : 200 }} />
         </ScrollView>
       </View>
       )}
@@ -356,6 +484,7 @@ export default function ReaderScreen() {
           fontSize={13 * fontScale}
         />
       )}
+
 
       {/* Vocab popup — positioned near tapped word */}
       {vocabPopup && (
@@ -378,38 +507,66 @@ export default function ReaderScreen() {
         </View>
       )}
 
-      {episodeDone && (
-        <View style={styles.endPanel}>
-          {/* Handle at top: tap to toggle, drag to expand/collapse */}
-          <View style={styles.endPanelHandle} {...panelPan.panHandlers}>
-            <View style={styles.endPanelHandleBar} />
-          </View>
+      {/* Bottom bar: always present in chat mode, animated visibility */}
+      {readingMode === 'chat' && (
+        <Animated.View style={[styles.bottomBar, { opacity: barsOpacity }]} pointerEvents={barsActive ? 'box-none' : 'none'}>
+          <TouchableOpacity
+            style={styles.bottomBarSide}
+            onPress={() => {
+              if (currentEp > 1) goToEpisode(currentEp - 1);
+              else if (episodeDone && currentEp === 1) router.back();
+            }}
+          >
+            <Text style={[styles.bottomBarArrow, currentEp <= 1 && !episodeDone && styles.epNavDisabled]}>‹</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.bottomBarEpBtn} onPress={toggleSidebar}>
+            <Text style={styles.bottomBarEpText}>Ep.{currentEp} / {totalEps}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.bottomBarSide}
+            onPress={() => {
+              if (currentEp >= totalEps && episodeDone) router.back();
+              else if (currentEp < totalEps) goToEpisode(currentEp + 1);
+            }}
+          >
+            <Text style={styles.bottomBarArrow}>›</Text>
+          </TouchableOpacity>
+        </Animated.View>
+      )}
 
-          {/* Collapsible: title + vocab list */}
-          <Animated.View style={[styles.endPanelBody, {
-            maxHeight: panelHeight.interpolate({ inputRange: [0, 1], outputRange: [0, PANEL_FULL] }),
-            opacity: panelHeight,
-          }]}>
-            <Text style={styles.endTitle}>本集读完</Text>
-            <Text style={styles.endSubtitle}>遇见 {episode.vocab.length} 个词</Text>
-            <ScrollView style={styles.vocabListScroll} showsVerticalScrollIndicator={false}>
-              {episode.vocab.map((item, i) => (
-                <TouchableOpacity key={i} style={styles.vocabRow}
-                  onPress={() => handleExpandWord(item.word, false)}>
-                  <Text style={item.is_new ? styles.vocabRowNew : styles.vocabRowReview}>
-                    {item.word}
-                    {item.is_new && <Text style={styles.vocabRowDef}>  {item.definition}</Text>}
+      {/* Sidebar overlay + episode list */}
+      {sidebarOpen && (
+        <View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }]} pointerEvents="box-none">
+          <Animated.View style={[styles.overlay, { opacity: overlayAnim }]}>
+            <TouchableOpacity style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} onPress={toggleSidebar} activeOpacity={1} />
+          </Animated.View>
+          <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarAnim.interpolate({ inputRange: [0, 1], outputRange: [-220, 0] }) }] }]}>
+            <View style={styles.sidebarHeader}>
+              <Text style={styles.sidebarTitle}>选集</Text>
+              <TouchableOpacity onPress={toggleSidebar}>
+                <Text style={styles.sidebarClose}>✕</Text>
+              </TouchableOpacity>
+            </View>
+            <ScrollView style={styles.sidebarList}>
+              {Array.from({ length: totalEps }, (_, i) => i + 1).map((epNum) => (
+                <TouchableOpacity
+                  key={epNum}
+                  style={[styles.sidebarItem, epNum === currentEp && styles.sidebarItemActive]}
+                  onPress={() => { goToEpisode(epNum); toggleSidebar(); }}
+                >
+                  <Text style={[styles.sidebarItemText, epNum === currentEp && styles.sidebarItemTextActive]}>
+                    Ep.{epNum}
+                  </Text>
+                  <Text style={styles.sidebarItemTitle} numberOfLines={1}>
+                    {loadEpisode(workId, epNum)?.meta.title ?? ''}
                   </Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
           </Animated.View>
-
-          <TouchableOpacity style={styles.continueButton} onPress={handleContinue}>
-            <Text style={styles.continueText}>{currentEp < totalEps ? '继续阅读 →' : '返回书架'}</Text>
-          </TouchableOpacity>
         </View>
       )}
+
       </Animated.View>
     </SafeAreaView>
   );
@@ -418,7 +575,8 @@ export default function ReaderScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.mainBg },
   animatedContent: { flex: 1 },
-  dictWrapper: { position: 'absolute', top: 48, left: 0, right: 0, zIndex: 200 },
+  dictWrapper: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 200 },
+  topBarOverlay: { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 30, backgroundColor: Colors.mainBg },
   statusBar: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, gap: 8 },
   backButton: { fontSize: 13, color: Colors.secondary, minWidth: 50 },
   title: { fontSize: 14, fontWeight: '500', color: Colors.bodyText, flex: 1, textAlign: 'center' },
@@ -427,11 +585,11 @@ const styles = StyleSheet.create({
   epNavDisabled: { color: Colors.divider },
   epNavLabel: { fontSize: 13, color: Colors.bodyText, fontWeight: '500', minWidth: 70, textAlign: 'center' },
   episodeLabel: { fontSize: 11, color: Colors.secondary, minWidth: 50, textAlign: 'right', flexShrink: 1 },
-  progressBarContainer: { height: 2, backgroundColor: Colors.divider },
-  progressFill: { height: 2, backgroundColor: Colors.progressBar },
+  progressBarContainer: { position: 'absolute', top: 0, left: 0, right: 0, height: 3, zIndex: 18, backgroundColor: 'transparent' },
+  progressFill: { height: 3, backgroundColor: Colors.progressBar },
   tapContainer: { flex: 1 },
   scrollView: { flex: 1 },
-  scrollContent: { paddingTop: 12 },
+  scrollContent: { paddingTop: 50, flexGrow: 1 },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
   emptyState: { flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 32, minHeight: 300 },
   emptyText: { fontSize: 14, color: Colors.secondary, fontFamily: 'Georgia' },
@@ -443,17 +601,31 @@ const styles = StyleSheet.create({
   vocabPopupWord: { fontSize: 17, fontWeight: '700', color: Colors.bodyText, marginBottom: 2 },
   vocabPopupDef: { fontSize: 14, color: Colors.secondary, marginBottom: 6 },
   // End panel
-  endPanel: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: Colors.panelBg, borderTopLeftRadius: 16, borderTopRightRadius: 16, paddingHorizontal: 24, paddingBottom: 24 },
-  endPanelBody: { overflow: 'hidden', alignItems: 'center' },
-  endPanelHandle: { paddingTop: 12, paddingBottom: 4, justifyContent: 'center', alignItems: 'center' },
-  endPanelHandleBar: { width: 36, height: 4, borderRadius: 2, backgroundColor: Colors.divider },
+  endPanel: { backgroundColor: Colors.panelBg, borderRadius: 16, paddingHorizontal: 20, paddingVertical: 20, marginTop: 24, marginHorizontal: 12 },
   endTitle: { fontSize: 14, color: Colors.secondary, marginBottom: 4 },
   endSubtitle: { fontSize: 18, color: Colors.bodyText, fontFamily: 'Georgia', marginBottom: 16 },
+  vocabListInline: { width: '100%', marginTop: 12 },
   vocabListScroll: { width: '100%', maxHeight: 200, marginBottom: 16 },
   vocabRow: { paddingVertical: 6, paddingHorizontal: 12 },
   vocabRowNew: { fontSize: 15, color: Colors.bodyText, fontFamily: 'Georgia' },
   vocabRowReview: { fontSize: 15, color: Colors.bodyText, fontWeight: '600', fontFamily: 'Georgia' },
   vocabRowDef: { fontSize: 13, color: Colors.definition, fontWeight: '400' },
-  continueButton: { paddingVertical: 8, paddingHorizontal: 24 },
-  continueText: { fontSize: 15, color: Colors.bodyText },
+  // Bottom bar
+  bottomBar: { position: 'absolute', bottom: 0, left: 0, right: 0, flexDirection: 'row', alignItems: 'center', borderTopWidth: 1, borderTopColor: Colors.divider, backgroundColor: Colors.mainBg, paddingVertical: 2, zIndex: 10 },
+  bottomBarSide: { flex: 1, alignItems: 'center', paddingVertical: 6 },
+  bottomBarArrow: { fontSize: 28, color: Colors.bodyText },
+  bottomBarEpBtn: { paddingHorizontal: 12, paddingVertical: 6 },
+  bottomBarEpText: { fontSize: 15, color: Colors.bodyText, fontWeight: '500' },
+  // Sidebar
+  overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.3)', zIndex: 300 },
+  sidebar: { position: 'absolute', top: 0, left: 0, bottom: 0, width: 220, backgroundColor: Colors.mainBg, zIndex: 301, paddingTop: 50 },
+  sidebarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: Colors.divider },
+  sidebarTitle: { fontSize: 16, color: Colors.bodyText, fontWeight: '500' },
+  sidebarClose: { fontSize: 18, color: Colors.secondary, padding: 4 },
+  sidebarList: { flex: 1 },
+  sidebarItem: { paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: Colors.divider },
+  sidebarItemActive: { backgroundColor: Colors.leftBubble },
+  sidebarItemText: { fontSize: 14, color: Colors.bodyText, fontWeight: '500' },
+  sidebarItemTextActive: { color: Colors.bodyText },
+  sidebarItemTitle: { fontSize: 12, color: Colors.secondary, marginTop: 2 },
 });
