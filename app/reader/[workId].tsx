@@ -286,6 +286,7 @@ export default function ReaderScreen() {
   }, [showDictPanel, smoothScrollTo]);
 
   const handleAvatarPress = useCallback(async (characterName: string) => {
+    wordWasTapped.current = true;
     const hasCustom = await checkCustomAvatarExists(getCustomAvatarUri(workId, characterName));
     const options: { text: string; onPress?: () => void }[] = [
       { text: '自定义头像', onPress: async () => {
