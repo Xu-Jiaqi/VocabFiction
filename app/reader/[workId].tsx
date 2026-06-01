@@ -154,6 +154,7 @@ export default function ReaderScreen() {
   const loadEp = useCallback(async (epNum: number, msgIdx: number) => {
     setLoading(true);
     setEpisodeDone(false);
+    hasInitialScrolled.current = false;
     setVocabPopup(null);
     dictAnim.setValue(0);
     setDictWord(null);
@@ -221,6 +222,7 @@ export default function ReaderScreen() {
   }, [dictWord, vocabPopup, episode, currentMsg, episodeDone, saveProgress, hideDictPanel, smoothScrollTo, barsOpacity]);
 
   const didScroll = useRef(false);
+  const hasInitialScrolled = useRef(false);
 
   const handleTouchStart = useCallback((e: any) => {
     touchStart.current = { x: e.nativeEvent.pageX, y: e.nativeEvent.pageY };
@@ -390,6 +392,12 @@ export default function ReaderScreen() {
           onTouchEnd={handleTouchEnd}
           onContentSizeChange={(w, h) => {
             contentHeight.current = h;
+            // Initial scroll to latest messages on re-enter
+            if (!hasInitialScrolled.current && currentMsg > 0 && !episodeDone) {
+              hasInitialScrolled.current = true;
+              const target = Math.max(0, h - layoutHeight.current);
+              setTimeout(() => scrollViewRef.current?.scrollTo({ y: target, animated: false }), 50);
+            }
             if (pendingRevealScroll.current > 0) {
               const cardH = pendingRevealScroll.current;
               pendingRevealScroll.current = 0;
