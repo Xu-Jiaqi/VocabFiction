@@ -83,28 +83,29 @@ export default function ReaderScreen() {
   const barsAnimTarget = useRef<0|1>(0);
   const topBarStyle = useMemo(() => [styles.topBarOverlay, { opacity: barsOpacity }], []);
   const [barsActive, setBarsActive] = useState(false);
-  useEffect(() => {
-    const id = barsOpacity.addListener(({ value }) => setBarsActive(value > 0.05));
-    return () => barsOpacity.removeListener(id);
-  }, [barsOpacity]);
 
   const showBars = useCallback(() => {
-    if (barsAnimTarget.current === 1) return; // already showing
+    if (barsAnimTarget.current === 1) return;
     barsAnimTarget.current = 1;
+    setBarsActive(true);
     Animated.timing(barsOpacity, { toValue: 1, duration: 200, useNativeDriver: true }).start();
     if (barsTimer.current) clearTimeout(barsTimer.current);
     if (episodeDone) return;
     barsTimer.current = setTimeout(() => {
       barsAnimTarget.current = 0;
-      Animated.timing(barsOpacity, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+      Animated.timing(barsOpacity, { toValue: 0, duration: 300, useNativeDriver: true }).start(() => {
+        setBarsActive(false);
+      });
     }, 3000);
   }, [barsOpacity, episodeDone]);
 
   const hideBars = useCallback(() => {
-    if (barsAnimTarget.current === 0) return; // already hiding
+    if (barsAnimTarget.current === 0) return;
     barsAnimTarget.current = 0;
     if (barsTimer.current) clearTimeout(barsTimer.current);
-    Animated.timing(barsOpacity, { toValue: 0, duration: 200, useNativeDriver: true }).start();
+    Animated.timing(barsOpacity, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
+      setBarsActive(false);
+    });
   }, [barsOpacity]);
 
   // Show bars initially
@@ -431,9 +432,12 @@ export default function ReaderScreen() {
                 if (!bottomBarsShown.current) {
                   bottomBarsShown.current = true;
                   if (barsTimer.current) clearTimeout(barsTimer.current);
+                  setBarsActive(true);
                   Animated.timing(barsOpacity, { toValue: 1, duration: 150, useNativeDriver: true }).start();
                   barsTimer.current = setTimeout(() => {
-                    Animated.timing(barsOpacity, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+                    Animated.timing(barsOpacity, { toValue: 0, duration: 300, useNativeDriver: true }).start(() => {
+                      setBarsActive(false);
+                    });
                   }, 3000);
                 }
               } else {
