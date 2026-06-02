@@ -5,8 +5,8 @@ import {
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Colors } from '@/src/theme/colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { loadEpisode } from '@/src/services/episode-loader';
-import { updateProgress } from '@/src/db/progress';
+import { loadEpisode, loadPlainText } from '@/src/services/episode-loader';
+import { markEpisodeRead, moveToEpisode, saveMessageProgress } from '@/src/services/reading-progress';
 import { getWork } from '@/src/db/works';
 import { getSetting } from '@/src/db/settings';
 import { FONT_SCALES } from '@/src/models/setting';
@@ -15,7 +15,7 @@ import { MessageRenderer } from '@/src/components/MessageRenderer';
 import { AnimatedMessage } from '@/src/components/AnimatedMessage';
 import { DictionaryPanel } from '@/src/components/DictionaryPanel';
 import { PlainTextReader } from '@/src/components/PlainTextReader';
-import { loadPlainText } from '@/src/services/episode-loader';
+import { EpisodeSidebar } from '@/src/components/EpisodeSidebar';
 import { saveCustomAvatar, deleteCustomAvatar, getCustomAvatarUri, checkCustomAvatarExists } from '@/src/services/character-loader';
 import * as ImagePicker from 'expo-image-picker';
 import type { Episode } from '@/src/models/episode';
@@ -31,6 +31,8 @@ export default function ReaderScreen() {
 
   const [work, setWork] = useState<Work | null>(null);
   const [episode, setEpisode] = useState<Episode | null>(null);
+  const [plainText, setPlainText] = useState<string | null>(null);
+  const [episodeTitles, setEpisodeTitles] = useState<Record<number, string>>({});
   const [currentEp, setCurrentEp] = useState(1);
   const [currentMsg, setCurrentMsg] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -161,7 +163,7 @@ export default function ReaderScreen() {
     setVocabPopup(null);
     dictAnim.setValue(0);
     setDictWord(null);
-    const ep = loadEpisode(workId, epNum);
+    const ep = await loadEpisode(workId, epNum);
     setEpisode(ep);
     setCurrentEp(epNum);
     setCurrentMsg(msgIdx);
@@ -179,10 +181,29 @@ export default function ReaderScreen() {
       const rm = await getSetting('reading_mode');
       setFontScale(FONT_SCALES[(fs as FontSize) || 'medium']);
       setReadingMode((rm as ReadingMode) || 'chat');
+      setPlainText(await loadPlainText(workId));
       await loadEp(p?.current_ep ?? 1, p?.current_msg ?? 0);
     }
     init();
   }, [workId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!work) return;
+    const totalEpisodeCount = work.total_eps;
+    let cancelled = false;
+    async function loadTitles() {
+      const entries = await Promise.all(
+        Array.from({ length: totalEpisodeCount }, async (_, i) => {
+          const epNum = i + 1;
+          const ep = await loadEpisode(workId, epNum);
+          return [epNum, ep?.meta.title ?? ''] as const;
+        })
+      );
+      if (!cancelled) setEpisodeTitles(Object.fromEntries(entries));
+    }
+    loadTitles();
+    return () => { cancelled = true; };
+  }, [work, workId]);
 
   useEffect(() => { prevMsgCount.current = currentMsg; }, [currentEp]);
   // Show bars and keep them visible when episode is done
@@ -194,7 +215,7 @@ export default function ReaderScreen() {
   }, [episodeDone, barsOpacity, showBars]);
 
   const saveProgress = useCallback(async (msgIdx: number) => {
-    try { await updateProgress(workId, { current_ep: currentEp, current_msg: msgIdx }); }
+    try { await saveMessageProgress(workId, currentEp, msgIdx); }
     catch (e) { console.error('[Reader] Save progress:', (e as Error)?.message ?? String(e)); }
   }, [workId, currentEp]);
 
@@ -206,7 +227,7 @@ export default function ReaderScreen() {
     // Last message shown, one more tap to reveal end panel
     // Sequence: scroll → render card → show bars (all sequential)
     if (next > episode.messages.length) {
-      saveProgress(next);
+      void markEpisodeRead(workId, currentEp, next, work?.total_eps ?? currentEp);
       isRevealing.current = true;
       const vocabCount = episode.vocab.length;
       const cardH = 148 + vocabCount * 33 + 56;
@@ -314,7 +335,7 @@ export default function ReaderScreen() {
 
   const goToEpisode = useCallback(async (epNum: number) => {
     if (!work || epNum < 1 || epNum > work.total_eps) return;
-    await updateProgress(workId, { current_ep: currentEp, current_msg: currentMsg });
+    await moveToEpisode(workId, epNum, work.total_eps);
     prevMsgCount.current = 0;
     scrollOffset.current = 0;
     await loadEp(epNum, 0);
@@ -324,7 +345,7 @@ export default function ReaderScreen() {
     if (!work) return;
     const nextEp = currentEp + 1;
     if (nextEp > work.total_eps) {
-      await updateProgress(workId, { current_ep: currentEp, current_msg: episode?.messages.length ?? 0, status: 'finished' });
+      await markEpisodeRead(workId, currentEp, (episode?.messages.length ?? 0) + 1, work.total_eps);
       router.back();
       return;
     }
@@ -493,7 +514,8 @@ export default function ReaderScreen() {
               <AnimatedMessage key={`msg-${i}`}>
                 <MessageRenderer message={msg} workId={workId} fontScale={fontScale}
                   onWordTap={handleWordTapped} onExpandWord={handleExpandWord}
-                  onAvatarPress={handleAvatarPress} avatarVersion={avatarVersion} />
+                  onAvatarPress={handleAvatarPress}
+                  avatarVersion={avatarVersion} />
               </AnimatedMessage>
             ))
           )}
@@ -523,7 +545,7 @@ export default function ReaderScreen() {
       {/* Traditional (paragraph) mode */}
       {readingMode === 'paragraph' && (
         <PlainTextReader
-          text={loadPlainText(workId) ?? 'Chapter not found'}
+          text={plainText ?? 'Chapter not found'}
           fontSize={13 * fontScale}
         />
       )}
@@ -579,35 +601,15 @@ export default function ReaderScreen() {
 
       {/* Sidebar overlay + episode list */}
       {sidebarOpen && (
-        <View style={[{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }]} pointerEvents="box-none">
-          <Animated.View style={[styles.overlay, { opacity: overlayAnim }]}>
-            <TouchableOpacity style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} onPress={toggleSidebar} activeOpacity={1} />
-          </Animated.View>
-          <Animated.View style={[styles.sidebar, { transform: [{ translateX: sidebarAnim.interpolate({ inputRange: [0, 1], outputRange: [-220, 0] }) }] }]}>
-            <View style={styles.sidebarHeader}>
-              <Text style={styles.sidebarTitle}>选集</Text>
-              <TouchableOpacity onPress={toggleSidebar}>
-                <Text style={styles.sidebarClose}>✕</Text>
-              </TouchableOpacity>
-            </View>
-            <ScrollView style={styles.sidebarList}>
-              {Array.from({ length: totalEps }, (_, i) => i + 1).map((epNum) => (
-                <TouchableOpacity
-                  key={epNum}
-                  style={[styles.sidebarItem, epNum === currentEp && styles.sidebarItemActive]}
-                  onPress={() => { goToEpisode(epNum); toggleSidebar(); }}
-                >
-                  <Text style={[styles.sidebarItemText, epNum === currentEp && styles.sidebarItemTextActive]}>
-                    Ep.{epNum}
-                  </Text>
-                  <Text style={styles.sidebarItemTitle} numberOfLines={1}>
-                    {loadEpisode(workId, epNum)?.meta.title ?? ''}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </Animated.View>
-        </View>
+        <EpisodeSidebar
+          currentEp={currentEp}
+          totalEps={totalEps}
+          titles={episodeTitles}
+          overlayAnim={overlayAnim}
+          sidebarAnim={sidebarAnim}
+          onClose={toggleSidebar}
+          onSelectEpisode={(epNum) => { goToEpisode(epNum); toggleSidebar(); }}
+        />
       )}
 
       </Animated.View>

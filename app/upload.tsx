@@ -5,14 +5,18 @@ import {
 import { Colors } from '@/src/theme/colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { File } from 'expo-file-system';
+import { useRouter } from 'expo-router';
+import { insertWork } from '@/src/db/works';
+import { makeUserWorkId, saveUploadedWorkContent } from '@/src/services/user-content';
 
 export default function UploadScreen() {
+  const router = useRouter();
   const [title, setTitle] = useState('');
   const [novelText, setNovelText] = useState('');
   const [novelFile, setNovelFile] = useState('');
   const [wordListText, setWordListText] = useState('');
   const [wordFile, setWordFile] = useState('');
-  const [status, setStatus] = useState<'idle' | 'generating'>('idle');
+  const [status, setStatus] = useState<'idle' | 'generating' | 'error'>('idle');
 
   const canSubmit = novelText.trim().length > 0 && wordListText.trim().length > 0;
 
@@ -45,9 +49,32 @@ export default function UploadScreen() {
     }
   };
 
-  const handleSubmit = () => {
-    if (!canSubmit) return;
-    setStatus('generating');
+  const handleSubmit = async () => {
+    if (!canSubmit || status === "generating") return;
+    setStatus("generating");
+    try {
+      const fileTitle = novelFile.endsWith(".txt") ? novelFile.slice(0, -4) : novelFile;
+      const workTitle = title.trim() || fileTitle || "Untitled Work";
+      const newWorkId = makeUserWorkId(workTitle);
+      await saveUploadedWorkContent({
+        workId: newWorkId,
+        title: workTitle,
+        novelText,
+        wordListText,
+      });
+      await insertWork({
+        id: newWorkId,
+        title: workTitle,
+        title_en: null,
+        author: null,
+        total_eps: 1,
+        source: "user",
+      });
+      router.replace({ pathname: "/reader/[workId]", params: { workId: newWorkId } });
+    } catch (e) {
+      console.warn("[Upload] Save uploaded work:", e);
+      setStatus("error");
+    }
   };
 
   return (
@@ -115,7 +142,10 @@ export default function UploadScreen() {
         </TouchableOpacity>
 
         {status === 'generating' && (
-          <Text style={styles.statusHint}>作品正在处理中，返回书架查看进度</Text>
+          <Text style={styles.statusHint}>正在保存作品...</Text>
+        )}
+        {status === 'error' && (
+          <Text style={styles.statusHint}>保存失败，请稍后重试</Text>
         )}
       </ScrollView>
     </SafeAreaView>

@@ -1,4 +1,5 @@
 import type { Episode } from '@/src/models/episode';
+import { loadUserEpisode, loadUserPlainText } from '@/src/services/user-content';
 
 const builtinEpisodes: Record<string, Record<number, () => Episode>> = {
   makeine: {
@@ -17,7 +18,7 @@ const builtinEpisodes: Record<string, Record<number, () => Episode>> = {
   },
 };
 
-export function loadEpisode(workId: string, epNum: number): Episode | null {
+export function loadBuiltinEpisode(workId: string, epNum: number): Episode | null {
   const workEps = builtinEpisodes[workId];
   if (!workEps) return null;
   const loader = workEps[epNum];
@@ -25,12 +26,16 @@ export function loadEpisode(workId: string, epNum: number): Episode | null {
   return loader() as Episode;
 }
 
+export async function loadEpisode(workId: string, epNum: number): Promise<Episode | null> {
+  return loadBuiltinEpisode(workId, epNum) ?? await loadUserEpisode(workId, epNum);
+}
+
 import { PARA_CH01 } from './para-ch01';
 
 /** Load plain text chapter for traditional reading mode. */
-export function loadPlainText(workId: string, _chNum = 1): string | null {
+export async function loadPlainText(workId: string, _chNum = 1): Promise<string | null> {
   if (workId === 'makeine') return PARA_CH01;
-  return null;
+  return loadUserPlainText(workId);
 }
 
 export function hasBuiltinEpisodes(workId: string): boolean {
