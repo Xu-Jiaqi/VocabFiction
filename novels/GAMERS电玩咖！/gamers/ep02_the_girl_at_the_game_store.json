@@ -1,0 +1,300 @@
+{
+  "meta": {
+    "ep": 2,
+    "title": "The Girl at the Game Store",
+    "kind": "main"
+  },
+  "messages": [
+    {
+      "type": "narration",
+      "text": "There are people in this world you simply cannot approach. An idol on stage, a star athlete, a fictional character. People so distant that even a chance encounter would feel like a miracle.",
+      "marks": [
+        {
+          "word": "approach",
+          "index": 9,
+          "definition": "接近, 靠近",
+          "is_new": true
+        },
+        {
+          "word": "idol",
+          "index": 11,
+          "definition": "偶像",
+          "is_new": true
+        },
+        {
+          "word": "encounter",
+          "index": 27,
+          "definition": "相遇, 邂逅",
+          "is_new": true
+        },
+        {
+          "word": "miracle",
+          "index": 32,
+          "definition": "奇迹",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "So when Karen Tendou, the most attractive girl in the entire school, suddenly spoke to me in a game store one June afternoon, my brain froze completely.",
+      "marks": [
+        {
+          "word": "attractive",
+          "index": 6,
+          "definition": "有吸引力的, 美貌的",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Her golden hair caught my gaze first. Not the cheap dyed kind. Natural, healthy, impossibly radiant blonde. Pale blue eyes. She looked like she had walked straight out of an anime.",
+      "marks": [
+        {
+          "word": "gaze",
+          "index": 5,
+          "definition": "凝视, 注视",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Um, excuse me. You go to Otofuki High, right?",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I made a strange noise. Pure panic. My face was drenched in sweat. I could not form a single coherent word.",
+      "marks": [
+        {
+          "word": "panic",
+          "index": 6,
+          "definition": "惊慌, 恐慌",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "I am Karen Tendou from class 2-A. This is our first meeting, right?",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Uh, y-yeah. I am, um. Amano. Keita Amano. Class F. Second year. I mean, yes. I go to Otofuki too.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "My introduction was awkward enough to embarrass anyone. I stuttered, I sweated, I could barely look her in the eye. But Karen did not seem bothered at all.",
+      "marks": [
+        {
+          "word": "awkward",
+          "index": 3,
+          "definition": "尴尬的, 笨拙的",
+          "is_new": true
+        },
+        {
+          "word": "embarrass",
+          "index": 6,
+          "definition": "使尴尬, 使难堪",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "She smiled and extended her smooth, delicate hand toward me.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Oh, good. We are in the same grade. Please take care of me, Amano-kun.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "After we shook hands, she kept smiling. Then she asked me something that made my heart leap into my throat.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Amano-kun, do you like them?",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "The question was too sudden. My heart pounded. What did she mean? Like her? Like me? Was this a confession?",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "I mean video games.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I felt a wave of relief. Then I immediately felt desperate to change the subject away from the game I had been holding.",
+      "marks": [
+        {
+          "word": "relief",
+          "index": 5,
+          "definition": "解脱, 宽慰",
+          "is_new": true
+        },
+        {
+          "word": "desperate",
+          "index": 10,
+          "definition": "绝望的, 不顾一切的",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "It was a questionable title. Something about a blonde girl and mischievous adventures. A game I did not want the school idol examining too closely.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "I like them! I mean, all video games! I like video games in general!",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I shouted the answer at the worst possible moment. Karen glanced at the game box, then at me. Her cheeks turned slightly pink.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "She laughed softly. Not mocking. Almost delighted. Like I had passed some kind of test without knowing it.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Amano-kun, if you do not mind, would you like to...",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "This was it. A confession. A real confession from the school idol. To me, the background character. My heart threatened to explode.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "...join the game club?",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I froze. Game club? Not a date? Not a confession? My brain struggled to process this noble, unexpected offer.",
+      "marks": [
+        {
+          "word": "noble",
+          "index": 16,
+          "definition": "高尚的, 崇高的",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "But Karen just kept smiling at me. Patient. Warm. Like an angel who had decided to volunteer for a mission into my dull little world.",
+      "marks": [
+        {
+          "word": "volunteer",
+          "index": 16,
+          "definition": "自愿, 主动做",
+          "is_new": true
+        }
+      ]
+    }
+  ],
+  "vocab": [
+    {
+      "word": "approach",
+      "definition": "接近, 靠近",
+      "is_new": true
+    },
+    {
+      "word": "idol",
+      "definition": "偶像",
+      "is_new": true
+    },
+    {
+      "word": "encounter",
+      "definition": "相遇, 邂逅",
+      "is_new": true
+    },
+    {
+      "word": "miracle",
+      "definition": "奇迹",
+      "is_new": true
+    },
+    {
+      "word": "attractive",
+      "definition": "有吸引力的, 美貌的",
+      "is_new": true
+    },
+    {
+      "word": "gaze",
+      "definition": "凝视, 注视",
+      "is_new": true
+    },
+    {
+      "word": "panic",
+      "definition": "惊慌, 恐慌",
+      "is_new": true
+    },
+    {
+      "word": "awkward",
+      "definition": "尴尬的, 笨拙的",
+      "is_new": true
+    },
+    {
+      "word": "embarrass",
+      "definition": "使尴尬, 使难堪",
+      "is_new": true
+    },
+    {
+      "word": "relief",
+      "definition": "解脱, 宽慰",
+      "is_new": true
+    },
+    {
+      "word": "desperate",
+      "definition": "绝望的, 不顾一切的",
+      "is_new": true
+    },
+    {
+      "word": "noble",
+      "definition": "高尚的, 崇高的",
+      "is_new": true
+    },
+    {
+      "word": "volunteer",
+      "definition": "自愿, 主动做",
+      "is_new": true
+    }
+  ]
+}

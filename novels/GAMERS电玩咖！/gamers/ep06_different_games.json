@@ -1,0 +1,239 @@
+{
+  "meta": {
+    "ep": 6,
+    "title": "Different Games",
+    "kind": "main"
+  },
+  "messages": [
+    {
+      "type": "narration",
+      "text": "After the FPS matches, Tendou-san brought out a famous action brawler. Four-player free-for-all with stage hazards and powerful items. The kind where a lucky pickup could flip the entire match.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "But during the second round, an odd feeling crept in. No one was swapping characters between matches.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Wait... none of you are changing characters?",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "I specialize in this one.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Tasuku",
+      "text": "I'm a beginner. I want to master one character at a time.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Nina",
+      "text": "...I just happen to be worst with this one.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Despite my unease, we kept playing. After six matches, still no one switched. I was the only one picking different fighters every round.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Nina",
+      "text": "Hey. Just stick to one. The one in the corner is strong and easy.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Oh! Thanks, senpai. I'll use it... this time.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "She gave me a puzzled look. 'This time'?",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "The matches started feeling monotonous. I was also the only one scrambling for items while everyone else fought straight hand-to-hand. My performance was just... mediocre.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "After about ten rounds, Tendou-san checked the clock and called it.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "We got a little carried away. Alright, that's it! Good work, everyone~",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "So... do you two have any reason for getting into games?",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Tendou-san told her story first. An older girl in her neighborhood adored games. After she moved away, Tendou-san played less often, but she still cherishes those memories.",
+      "marks": [
+        { "word": "cherishes", "index": 24, "definition": "珍惜", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Kase-senpai was drilled from childhood by his mercenary father. Nina-senpai set high goals to save a fighting-game-addicted friend. The two absent members: an RPG princess and a girl chasing a pro gamer who stole her heirloom.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "What kind of club is this?!",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "I don't have any special reason. I just... like games.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Is it wrong to love something without some grand philosophy behind it?",
+      "marks": [
+        { "word": "philosophy", "index": 9, "definition": "理念", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "No... of course not.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Tasuku",
+      "text": "Since losing my memory, the only thing I can do is that puzzle game.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Traitor——!!",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "There's no rule that you must improve. But the club's philosophy is encouraging each other to grow. Watching you two play today... I would love for you both to join us.",
+      "marks": [
+        { "word": "philosophy", "index": 10, "definition": "理念", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Tasuku",
+      "text": "I had a wonderful time. Please let me join.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Tendou-san turned to me, her smile like a dream I could reach out and grasp.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "What about you, Amano-kun? Won't you join the game club with me?",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "If I said yes, I could have everything. That dreamlike life. Members who might eventually respect a complete amateur like me.",
+      "marks": [
+        { "word": "respect", "index": 15, "definition": "尊重", "is_new": true },
+        { "word": "amateur", "index": 18, "definition": "业余爱好者", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "But that wasn't the real issue. For me, games were never about competition. They were comfort. They were salvation. They were pure entertainment.",
+      "marks": [
+        { "word": "comfort", "index": 15, "definition": "安慰", "is_new": true },
+        { "word": "salvation", "index": 18, "definition": "救赎", "is_new": true },
+        { "word": "entertainment", "index": 22, "definition": "娱乐", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "I acknowledge that the club is full of amazing people. I respect their way of playing games.",
+      "marks": [
+        { "word": "acknowledge", "index": 1, "definition": "承认", "is_new": true },
+        { "word": "respect", "index": 11, "definition": "尊重", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "But I'm stubborn about one thing. I want games to stay my sanctuary.",
+      "marks": [
+        { "word": "stubborn", "index": 2, "definition": "固执", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "So with resolute clarity, I rejected the offer.",
+      "marks": [
+        { "word": "resolute", "index": 2, "definition": "坚决的", "is_new": true },
+        { "word": "rejected", "index": 5, "definition": "拒绝", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "No, I'll pass. This club... doesn't seem to have the game I want to play.",
+      "marks": []
+    }
+  ],
+  "vocab": [
+    { "word": "cherishes", "definition": "珍惜", "is_new": true },
+    { "word": "philosophy", "definition": "理念", "is_new": true },
+    { "word": "respect", "definition": "尊重", "is_new": true },
+    { "word": "amateur", "definition": "业余爱好者", "is_new": true },
+    { "word": "comfort", "definition": "安慰", "is_new": true },
+    { "word": "salvation", "definition": "救赎", "is_new": true },
+    { "word": "entertainment", "definition": "娱乐", "is_new": true },
+    { "word": "acknowledge", "definition": "承认", "is_new": true },
+    { "word": "stubborn", "definition": "固执", "is_new": true },
+    { "word": "resolute", "definition": "坚决的", "is_new": true },
+    { "word": "rejected", "definition": "拒绝", "is_new": true }
+  ]
+}

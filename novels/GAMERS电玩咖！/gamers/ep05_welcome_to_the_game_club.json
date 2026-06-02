@@ -1,0 +1,207 @@
+{
+  "meta": {
+    "ep": 5,
+    "title": "Welcome to the Game Club",
+    "kind": "main"
+  },
+  "messages": [
+    {
+      "type": "narration",
+      "text": "The Game Club room sits in the old school building, across the connecting corridor from the main building.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Welcome to the Game Club!",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "The backlight from the window makes it hard to see inside at first. As my eyes adjust, I take in the room.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Monitors and game consoles fill about half a classroom. Two people are already here.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "A boy with glasses and cold, narrow eyes sits at a PC. A gyaro-style girl with brown hair lazily blows bubble gum while mashing a fighting game controller.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Let me introduce everyone. The cool-looking guy with glasses is our vice president, Kase Gakuto-senpai.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Gakuto",
+      "text": "...Oi, Tendou.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "And the stylish older girl buried in her fighting game — well, she is always playing — is Oiso Nina-senpai.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "The atmosphere in the room intimidates me. Kase-senpai's cold gaze alone could make anyone shrink.",
+      "marks": [
+        { "word": "intimidates", "index": 5, "definition": "恐吓,使畏惧", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Anyway, I want you two to see our club activities first. Kase-senpai, please stop brooding and just play some FPS like you always do.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Gakuto",
+      "text": "Oi, Tendou. I have never once in my life approached an FPS with a casual mindset.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "It is the latest entry in a famous FPS series I have dabbled in. Kase-senpai silently sets the CPU difficulty to maximum.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "The match ends in the blink of an eye. Tasuku and I die so many times it is almost embarrassing.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Gakuto",
+      "text": "One more.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I blink. He cuts me off before I can react.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Gakuto",
+      "text": "Play another match. Hurry up and get ready.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "So the second match happens. Then the third. Kase-senpai stays in first place... but Tasuku has climbed so close to Tendou in second that it is almost a tie.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I watch Tasuku's hands on the controller. He seems to observe every movement and absorb techniques in real time. His talent is undeniable.",
+      "marks": [
+        { "word": "observe", "index": 10, "definition": "观察", "is_new": true },
+        { "word": "absorb", "index": 14, "definition": "吸收", "is_new": true },
+        { "word": "techniques", "index": 15, "definition": "技巧", "is_new": true },
+        { "word": "talent", "index": 20, "definition": "才能,天赋", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Gakuto",
+      "text": "You are not bad. What is your name?",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Tasuku",
+      "text": "Ah, I am Tasuku.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Gakuto",
+      "text": "Tasuku, you show promise. At first you could barely control your character... but you kept improving. Impressive.",
+      "marks": [
+        { "word": "Impressive", "index": 16, "definition": "令人印象深刻的", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Tendou nods. This is exactly the quality needed to grow at gaming — the drive to steal techniques, the right attitude, and sharp observation. Tasuku has all three at a high level.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Then Kase-senpai turns toward me. His eyes are full of harsh criticism.",
+      "marks": [
+        { "word": "harsh", "index": 10, "definition": "严厉的,苛刻的", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Gakuto",
+      "text": "Compared to him, what are you doing? You remember the basic controls since you have played before... but across three matches, I saw zero growth from you.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Gakuto",
+      "text": "Also — you kept jumping on top of that vehicle in the middle of the map. What was that about?",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Ah, because... from up there, the scenery looked really beautiful. So I tried jumping to see it better. And it was amazing! ...Although I got shot immediately after.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Kase-senpai lets out a scornful laugh. He turns away, all competitive interest gone. The pressure crushes my chest.",
+      "marks": [
+        { "word": "competitive", "index": 10, "definition": "竞争的", "is_new": true },
+        { "word": "pressure", "index": 14, "definition": "压力", "is_new": true }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "I feel frustrated with myself. He criticized me harshly, and maybe he was right. But still — that scenery really was something.",
+      "marks": [
+        { "word": "frustrated", "index": 2, "definition": "沮丧的,挫败的", "is_new": true },
+        { "word": "criticized", "index": 6, "definition": "批评", "is_new": true }
+      ]
+    }
+  ],
+  "vocab": [
+    { "word": "intimidates", "definition": "恐吓,使畏惧", "is_new": true },
+    { "word": "observe", "definition": "观察", "is_new": true },
+    { "word": "absorb", "definition": "吸收", "is_new": true },
+    { "word": "techniques", "definition": "技巧", "is_new": true },
+    { "word": "talent", "definition": "才能,天赋", "is_new": true },
+    { "word": "Impressive", "definition": "令人印象深刻的", "is_new": true },
+    { "word": "harsh", "definition": "严厉的,苛刻的", "is_new": true },
+    { "word": "competitive", "definition": "竞争的", "is_new": true },
+    { "word": "pressure", "definition": "压力", "is_new": true },
+    { "word": "frustrated", "definition": "沮丧的,挫败的", "is_new": true },
+    { "word": "criticized", "definition": "批评", "is_new": true }
+  ]
+}

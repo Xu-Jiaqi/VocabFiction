@@ -6,6 +6,15 @@ const builtinEpisodes: Record<string, Record<number, () => Episode>> = {
     2: () => require('@/novels/败犬女主太多了！/makeine/ep02_the_argument.json'),
     3: () => require('@/novels/败犬女主太多了！/makeine/ep03_the_glass.json'),
   },
+  gamers: {
+    1: () => require('@/novels/GAMERS电玩咖！/gamers/ep01_an_ordinary_gamer.json'),
+    2: () => require('@/novels/GAMERS电玩咖！/gamers/ep02_the_girl_at_the_game_store.json'),
+    3: () => require('@/novels/GAMERS电玩咖！/gamers/ep03_tomorrow_at_the_library.json'),
+    4: () => require('@/novels/GAMERS电玩咖！/gamers/ep04_the_third_member.json'),
+    5: () => require('@/novels/GAMERS电玩咖！/gamers/ep05_welcome_to_the_game_club.json'),
+    6: () => require('@/novels/GAMERS电玩咖！/gamers/ep06_different_games.json'),
+    7: () => require('@/novels/GAMERS电玩咖！/gamers/ep07_thanks_for_always_helping.json'),
+  },
 };
 
 export function loadEpisode(workId: string, epNum: number): Episode | null {

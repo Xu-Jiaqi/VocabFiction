@@ -1,0 +1,150 @@
+{
+  "meta": {
+    "ep": 4,
+    "title": "The Third Member",
+    "kind": "main"
+  },
+  "messages": [
+    {
+      "type": "narration",
+      "text": "After school. I sit in the quiet library corner, stretching. Today was the longest day of my high school life.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "By any standard, this is a lucky rom-com scenario. The school idol invited me to her club. But right now I feel nothing like happiness.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "What am I so nervous about? The main event is about to begin. I will visit the Game Club, probably join, and become friends with Tendou and other gamers.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Tendou arrives and sits across from me. Then she drops the unexpected news.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Wait. There is one more person coming.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I freeze. One more person? She never mentioned this. Does that mean I was just an afterthought?",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "A moment ago I thought of myself as the chosen one. Now I feel ridiculous.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "About two minutes later, the library door opens. My encounter with the third member begins.",
+      "marks": [
+        { "word": "encounter", "index": 9, "definition": "相遇,邂逅", "is_new": false }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "The person who enters is a stunningly handsome boy. The elegant, fine-featured type. My mood hits rock bottom.",
+      "marks": [
+        { "word": "elegant", "index": 10, "definition": "优雅的", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Tasuku",
+      "text": "Ah, sorry, Tendou-san. And you must be Amano-kun, right? I am late. I apologize.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "He bows his head deeply. His humble attitude is genuine. I can tell immediately — this guy is a good person.",
+      "marks": [
+        { "word": "genuine", "index": 9, "definition": "真诚的", "is_new": false }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Let me introduce him properly. This is Tasuku Eiichi from class O. Same year as us. I found him at the game store playing a falling-block puzzle game with incredible focus.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Tasuku extends his right hand toward me, a little shy but natural.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Tasuku",
+      "text": "Please take care of me, Amano-kun. I heard about you from Tendou-san. I do not have many friends... so if you would be willing, I would be happy.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Despite the tension in my chest, I take his hand. His grip is warm and firm.",
+      "marks": [
+        { "word": "Despite", "index": 0, "definition": "尽管", "is_new": false },
+        { "word": "tension", "index": 2, "definition": "紧张,张力", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Ah, yes. I am Amano. Nice to meet you.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I acknowledge he is more handsome, more talented, and kinder than me. I feel utterly inferior. But I force a smile.",
+      "marks": [
+        { "word": "acknowledge", "index": 1, "definition": "承认,认识到", "is_new": false },
+        { "word": "inferior", "index": 15, "definition": "自卑的,低劣的", "is_new": true }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Well then, let us all go to the Game Club together.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Tasuku and I glance at each other. We both force awkward smiles and answer in unison.",
+      "marks": [
+        { "word": "awkward", "index": 10, "definition": "尴尬的", "is_new": false }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "The atmosphere is heavy with unspoken competition. But at least I feel a small relief — he does not seem like a bad person.",
+      "marks": [
+        { "word": "atmosphere", "index": 1, "definition": "氛围,气氛", "is_new": true },
+        { "word": "relief", "index": 14, "definition": "宽慰,解脱", "is_new": false }
+      ]
+    }
+  ],
+  "vocab": [
+    { "word": "encounter", "definition": "相遇,邂逅", "is_new": false },
+    { "word": "elegant", "definition": "优雅的", "is_new": true },
+    { "word": "genuine", "definition": "真诚的", "is_new": false },
+    { "word": "Despite", "definition": "尽管", "is_new": false },
+    { "word": "tension", "definition": "紧张,张力", "is_new": true },
+    { "word": "acknowledge", "definition": "承认,认识到", "is_new": false },
+    { "word": "inferior", "definition": "自卑的,低劣的", "is_new": true },
+    { "word": "awkward", "definition": "尴尬的", "is_new": false },
+    { "word": "atmosphere", "definition": "氛围,气氛", "is_new": true },
+    { "word": "relief", "definition": "宽慰,解脱", "is_new": false }
+  ]
+}

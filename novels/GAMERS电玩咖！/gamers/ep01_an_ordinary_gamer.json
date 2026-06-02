@@ -1,0 +1,238 @@
+{
+  "meta": {
+    "ep": 1,
+    "title": "An Ordinary Gamer",
+    "kind": "main"
+  },
+  "messages": [
+    {
+      "type": "narration",
+      "text": "I have never felt any genuine connection with protagonists who claim they love their ordinary daily lives.",
+      "marks": [
+        {
+          "word": "genuine",
+          "index": 5,
+          "definition": "真正的, 真诚的",
+          "is_new": true
+        },
+        {
+          "word": "ordinary",
+          "index": 14,
+          "definition": "普通的, 平凡的",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Despite being exactly that kind of person myself, a high school boy so painfully average that the word despair feels almost accurate.",
+      "marks": [
+        {
+          "word": "despite",
+          "index": 0,
+          "definition": "尽管, 虽然",
+          "is_new": true
+        },
+        {
+          "word": "despair",
+          "index": 18,
+          "definition": "绝望",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "I cannot imagine feeling satisfied with an identity this bland. A background character. That is what I am.",
+      "marks": [
+        {
+          "word": "imagine",
+          "index": 2,
+          "definition": "想像",
+          "is_new": true
+        },
+        {
+          "word": "identity",
+          "index": 7,
+          "definition": "身份, 自我认同",
+          "is_new": true
+        },
+        {
+          "word": "background",
+          "index": 11,
+          "definition": "背景, 后台",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "My name is Keita Amano. Sixteen. Second year. Blood type A, Cancer. Small and thin. I live with my parents and a younger brother. Nothing remarkable to describe.",
+      "marks": [
+        {
+          "word": "describe",
+          "index": 27,
+          "definition": "描述, 形容",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "No special talents. No hobbies I pursue with real passion. I did baseball in elementary and middle school, but only as a casual social activity.",
+      "marks": [
+        {
+          "word": "pursue",
+          "index": 6,
+          "definition": "追求, 从事",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "My grades are decent enough, but I slacked off playing too many games and ended up at a local public high school with a low academic ranking. Otofuki High.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "All my childhood friends went to different schools. My social connections reset to zero. Even now in second year, I spend every break alone with my phone or handheld console.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Some people call it being a loner. The occasional laugh comes my way, but there is no serious bullying. I am too forgettable even for that.",
+      "marks": [
+        {
+          "word": "occasional",
+          "index": 8,
+          "definition": "偶尔的, 不时的",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "A girlfriend? Pure fantasy. I am a background extra in everyone else's story. Nobody even bothers to acknowledge my existence half the time.",
+      "marks": [
+        {
+          "word": "acknowledge",
+          "index": 17,
+          "definition": "承认, 理会",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "If I have one defining trait, it is that my name sounds almost identical to a certain famous video game protagonist. Oh, and I love games. Deeply, genuinely, unconditionally.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "When I play a good game, I am truly happy. That window between coming home and dinner is pure, supreme bliss. The kind of leisure that makes everything else bearable.",
+      "marks": [
+        {
+          "word": "leisure",
+          "index": 24,
+          "definition": "闲暇, 休闲",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Still, there are countless people who love games just as much. In the end, even this is barely a real trait. Barely a real identity.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "And so, my story, the story of someone like me, will begin in the most cliché way possible.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "An ordinary boy who claims to appreciate his ordinary life. Approached by a beautiful girl. A setup so formulaic I can barely acknowledge it without cringing.",
+      "marks": [
+        {
+          "word": "appreciate",
+          "index": 6,
+          "definition": "欣赏, 感激",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Except this is not that kind of story. This is a story about games.",
+      "marks": []
+    }
+  ],
+  "vocab": [
+    {
+      "word": "genuine",
+      "definition": "真正的, 真诚的",
+      "is_new": true
+    },
+    {
+      "word": "ordinary",
+      "definition": "普通的, 平凡的",
+      "is_new": true
+    },
+    {
+      "word": "despite",
+      "definition": "尽管, 虽然",
+      "is_new": true
+    },
+    {
+      "word": "despair",
+      "definition": "绝望",
+      "is_new": true
+    },
+    {
+      "word": "imagine",
+      "definition": "想像",
+      "is_new": true
+    },
+    {
+      "word": "identity",
+      "definition": "身份, 自我认同",
+      "is_new": true
+    },
+    {
+      "word": "background",
+      "definition": "背景, 后台",
+      "is_new": true
+    },
+    {
+      "word": "describe",
+      "definition": "描述, 形容",
+      "is_new": true
+    },
+    {
+      "word": "pursue",
+      "definition": "追求, 从事",
+      "is_new": true
+    },
+    {
+      "word": "occasional",
+      "definition": "偶尔的, 不时的",
+      "is_new": true
+    },
+    {
+      "word": "acknowledge",
+      "definition": "承认, 理会",
+      "is_new": true
+    },
+    {
+      "word": "leisure",
+      "definition": "闲暇, 休闲",
+      "is_new": true
+    },
+    {
+      "word": "appreciate",
+      "definition": "欣赏, 感激",
+      "is_new": true
+    }
+  ]
+}

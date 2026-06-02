@@ -1,0 +1,289 @@
+{
+  "meta": {
+    "ep": 3,
+    "title": "Tomorrow at the Library",
+    "kind": "main"
+  },
+  "messages": [
+    {
+      "type": "narration",
+      "text": "There is nothing better than gaming in a good mood.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "When you are down, even the most moving RPG scenes fail to reach you. But when you are happy, even a total party wipe that ruins hours of progress only makes you laugh.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "That is why today — even sitting alone in the classroom corner playing a mobile social game — I am completely absorbed.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I reflect on yesterday as I tap through quests. Tendou Karen — the school idol — invited me to join the Game Club.",
+      "marks": [
+        {
+          "word": "reflect",
+          "index": 1,
+          "definition": "回想,反思",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "A dream event dropped into my gloomy school life out of nowhere. My idol approached me herself. I might soon have friends who love games.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "For the first time, I genuinely anticipate going to school. Although a slight anxiety lingers — what if this is all a dream?",
+      "marks": [
+        {
+          "word": "anticipate",
+          "index": 6,
+          "definition": "期待",
+          "is_new": true
+        },
+        {
+          "word": "anxiety",
+          "index": 13,
+          "definition": "焦虑,不安",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Yesterday, after the game store, we sat on a park bench. Tendou explained the club while sipping from a small water bottle.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "I founded the club, but I have not done any public recruitment. No posters. No announcements.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Instead, each member personally finds people with real love for games. It is slow and inefficient. We might miss many good players.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "But letting in the wrong people could destroy everything. I want to build a solid foundation first. Quality over speed.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Anyway — tomorrow! Keep your after-school time free! See you then, Amano-kun!",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I stared at the ceiling. Was I really chosen by her? It had nothing to do with romance. Still — something I could only fantasize about now felt real.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "That was the first day in my life I truly looked forward to coming to school. Even now I replay the memory again and again as I clear quests.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Then a rescue request notification pops up. Another player needs help beating a limited-time event boss.",
+      "marks": [
+        {
+          "word": "rescue",
+          "index": 2,
+          "definition": "救援",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "It is from MONO — a friend I added when I first started this game. We have never exchanged a single message, yet I feel a strange bond.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I reach out to tap the accept button. But then —",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Ah, found you, Amano-kun!",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "She enters the classroom with a bright voice. The room goes silent. An impossible figure in our ordinary space.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Hmm? What are you busy with?",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Ah, just... passing time...",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Oh, a casual social game. I am surprised. I did not expect you to play such boring things.",
+      "marks": [
+        {
+          "word": "casual",
+          "index": 2,
+          "definition": "休闲的,随便的",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "My face goes hot. Does she despise casual games? I flip the phone face-down on my desk. I avoid meeting her eyes.",
+      "marks": [
+        {
+          "word": "despise",
+          "index": 6,
+          "definition": "鄙视,轻视",
+          "is_new": true
+        },
+        {
+          "word": "avoid",
+          "index": 18,
+          "definition": "避免,回避",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Anyway, about today. Let us meet at the library after school. Can you come right after cleaning duty?",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Yes. I think... that should be fine.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "She leaves with a wave. I pick up my phone and check the screen. Rescue Failed. A wave of guilt washes over me.",
+      "marks": [
+        {
+          "word": "guilt",
+          "index": 19,
+          "definition": "罪恶感,内疚",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "I sacrificed helping a friend for a casual conversation. The club must be my priority now — but I cannot focus on anything.",
+      "marks": [
+        {
+          "word": "sacrificed",
+          "index": 1,
+          "definition": "牺牲",
+          "is_new": true
+        },
+        {
+          "word": "priority",
+          "index": 14,
+          "definition": "优先事项",
+          "is_new": true
+        },
+        {
+          "word": "focus",
+          "index": 20,
+          "definition": "专注,集中",
+          "is_new": true
+        }
+      ]
+    }
+  ],
+  "vocab": [
+    {
+      "word": "reflect",
+      "definition": "回想,反思",
+      "is_new": true
+    },
+    {
+      "word": "anticipate",
+      "definition": "期待",
+      "is_new": true
+    },
+    {
+      "word": "anxiety",
+      "definition": "焦虑,不安",
+      "is_new": true
+    },
+    {
+      "word": "rescue",
+      "definition": "救援",
+      "is_new": true
+    },
+    {
+      "word": "casual",
+      "definition": "休闲的,随便的",
+      "is_new": true
+    },
+    {
+      "word": "despise",
+      "definition": "鄙视,轻视",
+      "is_new": true
+    },
+    {
+      "word": "avoid",
+      "definition": "避免,回避",
+      "is_new": true
+    },
+    {
+      "word": "guilt",
+      "definition": "罪恶感,内疚",
+      "is_new": true
+    },
+    {
+      "word": "sacrificed",
+      "definition": "牺牲",
+      "is_new": true
+    },
+    {
+      "word": "priority",
+      "definition": "优先事项",
+      "is_new": true
+    },
+    {
+      "word": "focus",
+      "definition": "专注,集中",
+      "is_new": true
+    }
+  ]
+}

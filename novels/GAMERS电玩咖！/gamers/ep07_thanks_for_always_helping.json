@@ -1,0 +1,393 @@
+{
+  "meta": {
+    "ep": 7,
+    "title": "Thanks for Always Helping",
+    "kind": "main"
+  },
+  "messages": [
+    {
+      "type": "narration",
+      "text": "The next morning, I slammed my head onto my desk and clawed at my hair in pure regret. I didn't care about the stares.",
+      "marks": [
+        {
+          "word": "regret",
+          "index": 17,
+          "definition": "后悔",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Why did I reject her? Am I an idiot? I'd repeated those questions all night without sleeping.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "Calm down. I can still fix this. Just reapply to the club. Humiliating, sure... but I can still rescue the situation.",
+      "marks": [
+        {
+          "word": "rescue",
+          "index": 18,
+          "definition": "挽救, 拯救",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Just then, the classroom buzzed. Tendou-san stood at the door, smiling elegantly as always.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Good morning, Amano-kun. What are you up to?",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Oh... just a mobile game...",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Huh. Didn't expect you to like something so boring.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "She ignored my phone and leaned in close — closer than yesterday.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Anyway. Please reconsider. I have real passion for this club, and I'm very interested in you.",
+      "marks": [
+        {
+          "word": "passion",
+          "index": 6,
+          "definition": "热情",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "She quietly extended her right hand. She looked like the Buddha lowering a spider thread to save a sinner.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I switched my phone to my left hand and slowly reached out my right—",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "MONO rescue request: Five seconds remaining.",
+      "marks": [
+        {
+          "word": "rescue",
+          "index": 1,
+          "definition": "救援",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Instead of taking her hand, my thumb tapped Accept Rescue.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I had neglected her outstretched hand. A mobile game had taken priority over a real person reaching out.",
+      "marks": [
+        {
+          "word": "neglected",
+          "index": 2,
+          "definition": "忽视",
+          "is_new": true
+        },
+        {
+          "word": "priority",
+          "index": 11,
+          "definition": "优先",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Guilt hit me immediately.",
+      "marks": [
+        {
+          "word": "guilt",
+          "index": 0,
+          "definition": "内疚",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Amano-kun... is that boring mobile game more important than my invitation?",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I lifted my head and smiled. For once, I didn't stutter.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Tendou-san. Some things that seem boring to you hold meaning for me.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "So I'm sorry, but I still won't join. That club doesn't have the game I want to play.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "I respect everyone there. Working hard to improve — that's a great way to enjoy games.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "But I prefer just having fun. Playing happily, without competing against anyone.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I thought about my brother. We share almost nothing. But when we play games, we laugh like idiots — even on terrible school days.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "Games are my refuge. My comfort. They're how a hopeless guy like me connects with people.",
+      "marks": [
+        {
+          "word": "comfort",
+          "index": 5,
+          "definition": "安慰",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "That's why I want games to stay as pure entertainment — something that can save people.",
+      "marks": [
+        {
+          "word": "entertainment",
+          "index": 9,
+          "definition": "娱乐",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "dialogue",
+      "side": "right",
+      "name": "Keita",
+      "text": "So I'm sorry. The club is amazing. But my resolve is firm — I'll keep playing my way.",
+      "marks": [
+        {
+          "word": "resolve",
+          "index": 9,
+          "definition": "决心",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Tendou-san's gaze dropped. Her whole body trembled.",
+      "marks": []
+    },
+    {
+      "type": "dialogue",
+      "side": "left",
+      "name": "Karen",
+      "text": "Why does this feel like I'm being rejected...? I never imagined someone like you would reject me...",
+      "marks": [
+        {
+          "word": "rejected",
+          "index": 7,
+          "definition": "被拒绝",
+          "is_new": true
+        },
+        {
+          "word": "reject",
+          "index": 15,
+          "definition": "拒绝",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "She slammed my desk, face red with tears. Then she spun around and stormed out.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I guess... I picked the wrong dialogue option.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "After a while, I cleared MONO's rescue quest before the bell rang.",
+      "marks": [
+        {
+          "word": "rescue",
+          "index": 6,
+          "definition": "救援",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Then my phone buzzed. A message from MONO. I opened it to find one short sentence.",
+      "marks": []
+    },
+    {
+      "type": "narration",
+      "text": "I read those words four times. A wave of relief and gratitude washed over me.",
+      "marks": [
+        {
+          "word": "relief",
+          "index": 9,
+          "definition": "解脱, 宽慰",
+          "is_new": true
+        },
+        {
+          "word": "gratitude",
+          "index": 11,
+          "definition": "感激",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "I looked out the window. No pretty girls, no drama. Just my ordinary, half-baked daily life... but it wasn't all bad.",
+      "marks": [
+        {
+          "word": "ordinary",
+          "index": 12,
+          "definition": "平凡的",
+          "is_new": true
+        }
+      ]
+    },
+    {
+      "type": "narration",
+      "text": "Today, once again, games walked beside me through my ridiculously ordinary day.",
+      "marks": [
+        {
+          "word": "ordinary",
+          "index": 10,
+          "definition": "平凡的",
+          "is_new": true
+        }
+      ]
+    }
+  ],
+  "vocab": [
+    {
+      "word": "regret",
+      "definition": "后悔",
+      "is_new": true
+    },
+    {
+      "word": "rescue",
+      "definition": "挽救, 救援",
+      "is_new": true
+    },
+    {
+      "word": "passion",
+      "definition": "热情",
+      "is_new": true
+    },
+    {
+      "word": "neglected",
+      "definition": "忽视",
+      "is_new": true
+    },
+    {
+      "word": "priority",
+      "definition": "优先",
+      "is_new": true
+    },
+    {
+      "word": "guilt",
+      "definition": "内疚",
+      "is_new": true
+    },
+    {
+      "word": "comfort",
+      "definition": "安慰",
+      "is_new": true
+    },
+    {
+      "word": "entertainment",
+      "definition": "娱乐",
+      "is_new": true
+    },
+    {
+      "word": "resolve",
+      "definition": "决心",
+      "is_new": true
+    },
+    {
+      "word": "rejected",
+      "definition": "被拒绝",
+      "is_new": true
+    },
+    {
+      "word": "reject",
+      "definition": "拒绝",
+      "is_new": true
+    },
+    {
+      "word": "relief",
+      "definition": "解脱, 宽慰",
+      "is_new": true
+    },
+    {
+      "word": "gratitude",
+      "definition": "感激",
+      "is_new": true
+    },
+    {
+      "word": "ordinary",
+      "definition": "平凡的",
+      "is_new": true
+    }
+  ]
+}

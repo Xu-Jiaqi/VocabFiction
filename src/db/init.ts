@@ -117,6 +117,9 @@ export async function initDatabase(): Promise<{
     INSERT OR IGNORE INTO settings (key, value) VALUES ('reading_mode', 'chat');
     INSERT OR IGNORE INTO works (id, title, title_en, total_eps, source)
     VALUES ('makeine', '败犬女主太多了！', 'Too Many Losing Heroines!', 3, 'builtin');
+    INSERT OR IGNORE INTO works (id, title, title_en, total_eps, source)
+    VALUES ('gamers', 'GAMERS电玩咖！', 'Gamers!', 7, 'builtin');
+    UPDATE works SET total_eps = 7 WHERE id = 'gamers';
   `);
 
   console.log('[DB] App ready');
