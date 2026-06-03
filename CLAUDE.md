@@ -75,13 +75,20 @@ The old `vocab-novel-app/` has been renamed to `vocab-novel-app-deprecated/` and
 - **Platforms**: iOS + Android
 - **Local storage**: expo-sqlite (structured data, offline dictionary, reading progress), expo-secure-store (API Key)
 - **Animation**: Reanimated + Gesture Handler
-- **Architecture**: Pure client-side. No backend server. User provides own LLM API key. All content stored locally as JSON.
+- **Architecture**: Pure client-side. No backend server. User provides own LLM API key. Built-in reading content is JSON; uploaded novels are currently stored locally as UTF-8 source text plus DB metadata.
+
+## Implementation notes
+
+- `src/services/episode-loader.ts` exports async `loadEpisode` and `loadPlainText` because user-uploaded works read from the local file system. In React components, call them from async effects/callbacks and store results in state; do not call them directly in JSX/render.
+- Upload uses the current split UI: `app/upload/wordlist.tsx` creates a persisted `wordListId` and updates the latest local word list; `app/upload/novel.tsx` consumes the current word list, saves only `plain.txt` + `meta.json`, inserts a `works` row with `word_list_id`, and returns to the bookshelf. Uploaded user works do not generate episode JSON and do not open the reader on tap; long-press the bookshelf card to manage/delete/change word list. The old combined `app/upload.tsx` route is removed.
+- Keep `app/reader/[workId].tsx` focused on reader state/gestures. Sidebar, end-of-episode vocabulary panel, and vocabulary popup live in `src/components/EpisodeSidebar.tsx`, `src/components/EpisodeEndPanel.tsx`, and `src/components/VocabPopup.tsx`.
 
 ## UI style
 
 - Warm paper aesthetic: cream background (`#FAF8F3`), ink-brown text (`#2C2416`).
 - Serif body text (Charter/Georgia), sans-serif UI elements.
 - Chat bubbles: asymmetric border-radius, no shadows.
+- Narration uses a centered subtle warm-gray bubble, not bare text.
 - Vocabulary: bold only, no color. Two-level lookup: tap word → small definition card; tap card → dictionary panel.
 - No emoji. No cool tones. No progress percentage.
 - Full spec: `documents/ui-style-spec.md`.

@@ -16,7 +16,7 @@ VocabFiction turns novels into interactive chat-fiction episodes where English v
 - **End-of-episode panel** — review all vocabulary encountered, expandable/collapsible with drag gesture
 - **Dual reading modes** — chat mode (對話體) or traditional paragraph mode (傳統)
 - **Adjustable font size** — small, medium, large
-- **Your own novels** — upload .txt files and word lists (generation pipeline coming soon)
+- **Your own novels** — upload .txt files and word lists; uploaded novels are saved as UTF-8 source text, bound to a word list, and shown on the bookshelf (generation pipeline coming soon)
 
 ## Quick Start
 
@@ -71,12 +71,15 @@ VocabFiction/
 │   ├── reader/[workId].tsx       # Reading interface
 │   ├── settings.tsx              # Font size, reading mode
 │   ├── api-settings.tsx          # API configuration
-│   └── upload.tsx                # Novel upload
+│   ├── work/[workId]/manage.tsx   # Uploaded work management
+│   └── upload/
+│       ├── novel.tsx             # Novel upload
+│       └── wordlist.tsx          # Word list upload
 ├── src/
 │   ├── db/                       # Database layer (expo-sqlite)
 │   │   ├── init.ts               # SQLite init + ECDICT copy
 │   │   ├── dictionary.ts         # ECDICT lookup + lemma resolution
-│   │   ├── works.ts, progress.ts, settings.ts
+│   │   ├── works.ts, word-lists.ts, progress.ts, settings.ts
 │   ├── models/                   # TypeScript types
 │   ├── components/               # UI components
 │   │   ├── ChatBubble.tsx        # Dialogue bubble (left/right)
@@ -88,6 +91,8 @@ VocabFiction/
 │   ├── services/                 # Business logic
 │   │   ├── lemma.ts              # ECDICT exchange parser
 │   │   ├── episode-loader.ts     # Episode JSON + chapter text
+│   │   ├── user-content.ts       # Uploaded source storage
+│   │   ├── text-file.ts          # Text file decoding to UTF-8 string
 │   │   └── character-loader.ts   # Character avatar mapping
 │   └── theme/colors.ts           # Warm paper color palette
 ├── novels/败犬女主太多了！/       # Built-in novel
@@ -120,7 +125,7 @@ VocabFiction/
 | Built-in novel | *Too Many Losing Heroines!* — 3 chat episodes + 1 traditional chapter |
 | Chat reading mode | Tap-to-advance, dialogue bubbles (left/right), narration, entrance animations |
 | Traditional reading mode | Continuous paragraph layout, plain text chapter support |
-| Bookshelf | Work list with reading progress ("已读 Ep.3 / 共 12 集") |
+| Bookshelf | Work list showing title + bound word list name |
 | Reading progress persistence | Remembers current episode and message position across sessions |
 | Episode navigation | Prev/next episode controls in status bar |
 | Vocabulary inline display | `is_new`: bold + definition; review: bold only, tappable |
@@ -131,7 +136,8 @@ VocabFiction/
 | Font size setting | Small / Medium / Large, applied to all text |
 | Reading mode setting | Chat (對話體) / Traditional (傳統) |
 | API settings page | URL, API Key (secure storage), model name, connection test |
-| Upload page | File picker for .txt novels and word lists, paste support |
+| Split upload pages | File picker/paste support for word lists and novels; uploaded novels save only UTF-8 `plain.txt` + `meta.json` and bind `works.word_list_id` |
+| Uploaded work management | User-uploaded works appear on the bookshelf; tap does nothing for now, long-press opens management for renaming, word-list changes, and deletion |
 | Character avatars | Name → avatar image mapping, initial-letter fallback |
 | Smooth scrolling | Custom ease-out scroll animation (500ms, cubic easing) |
 | Reader entrance animation | Slide-in from right (250ms) |
@@ -142,8 +148,8 @@ VocabFiction/
 |---------|--------|
 | Auto-learn detection (M=3) | Deferred — vocabulary tracking state not yet implemented |
 | Side stories (番外) | Deferred — depends on vocabulary coverage data |
-| Generation pipeline | Upload form exists; LLM generation not yet wired up |
-| Paragraph reading for episodes | Episode messages rendered as paragraphs (available via `ParagraphReader`) |
+| Generation pipeline | Source upload and word-list binding are implemented; LLM generation is not yet wired up |
+| Paragraph reading for episodes | Plain text chapter reading is available via `PlainTextReader` in traditional mode |
 
 ### 📋 Planned
 

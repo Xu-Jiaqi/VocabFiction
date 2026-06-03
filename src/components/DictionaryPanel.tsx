@@ -25,12 +25,13 @@ export function DictionaryPanel({ word, onClose }: DictionaryPanelProps) {
 
   return (
     <View style={styles.panel}>
-      <View style={styles.headerRow}>
-        <View style={{ flex: 1 }} />
-        <TouchableOpacity onPress={onClose}>
-          <Text style={styles.closeBtn}>✕</Text>
-        </TouchableOpacity>
-      </View>
+      <TouchableOpacity
+        onPress={onClose}
+        style={styles.closeButton}
+        hitSlop={{ top: 8, right: 8, bottom: 8, left: 8 }}
+      >
+        <Text style={styles.closeBtn}>✕</Text>
+      </TouchableOpacity>
 
       {loading ? (
         <ActivityIndicator size="small" color={Colors.secondary} style={styles.loader} />
@@ -75,14 +76,16 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
     borderBottomLeftRadius: 12,
     borderBottomRightRadius: 12,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
     maxHeight: 220,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowColor: Colors.bodyText,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 10,
+    elevation: 8,
   },
-  headerRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 4 },
+  closeButton: { position: 'absolute', top: 8, right: 14, zIndex: 1 },
   closeBtn: { fontSize: 16, color: Colors.secondary, padding: 4 },
   loader: { paddingVertical: 16 },
   scrollContent: { flexGrow: 0 },

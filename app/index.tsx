@@ -1,33 +1,37 @@
-import { useEffect, useState } from 'react';
+import { useState, useCallback } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, FlatList } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import { Colors } from '@/src/theme/colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getAllWorks } from '@/src/db/works';
-import { getProgress } from '@/src/db/progress';
+import { getAllWordLists } from '@/src/db/word-lists';
 import type { Work } from '@/src/models/work';
-import type { ReadingProgress } from '@/src/models/progress';
-import { useCallback } from 'react';
+import type { WordList } from '@/src/models/word-list';
+import { ActionSheet } from '@/src/components/ActionSheet';
+import type { ActionItem } from '@/src/components/ActionSheet';
 
-interface WorkWithProgress {
+interface WorkWithMeta {
   work: Work;
-  progress: ReadingProgress | null;
+  wordListName: string;
 }
 
 export default function BookshelfScreen() {
   const router = useRouter();
-  const [works, setWorks] = useState<WorkWithProgress[]>([]);
+  const [works, setWorks] = useState<WorkWithMeta[]>([]);
+  const [sheetVisible, setSheetVisible] = useState(false);
 
   const loadData = useCallback(async () => {
     try {
-      const allWorks = await getAllWorks();
-      const withProgress = await Promise.all(
-        allWorks.map(async (work) => ({
-          work,
-          progress: await getProgress(work.id),
-        }))
-      );
-      setWorks(withProgress);
+      const [allWorks, wordLists] = await Promise.all([
+        getAllWorks(),
+        getAllWordLists(),
+      ]);
+      const wlMap = new Map(wordLists.map((wl: WordList) => [wl.id, wl.name]));
+      const withMeta = allWorks.map((work) => ({
+        work,
+        wordListName: wlMap.get(work.word_list_id ?? '') ?? '',
+      }));
+      setWorks(withMeta);
     } catch (e) {
       console.error('[Bookshelf] Failed to load works:', e);
     }
@@ -39,28 +43,30 @@ export default function BookshelfScreen() {
     }, [loadData])
   );
 
-  const renderWorkCard = ({ item }: { item: WorkWithProgress }) => {
-    const { work, progress } = item;
-    const currentEp = progress?.current_ep ?? 1;
-    const readEps = progress?.total_read_eps ?? 0;
+  const fabActions: ActionItem[] = [
+    { text: '上传小说', onPress: () => router.push('/upload/novel') },
+    { text: '上传词表', onPress: () => router.push('/upload/wordlist') },
+  ];
+
+  const renderWorkCard = ({ item }: { item: WorkWithMeta }) => {
+    const { work, wordListName } = item;
+    const isUserWork = work.source === 'user';
 
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push(`/reader/${work.id}`)}
+        onPress={() => {
+          if (!isUserWork) router.push(`/reader/${work.id}`);
+        }}
+        onLongPress={() => router.push(`/work/${work.id}/manage`)}
       >
         <View style={styles.cardContent}>
           <Text style={styles.workTitle}>{work.title}</Text>
-          {work.title_en && (
-            <Text style={styles.workTitleEn}>{work.title_en}</Text>
-          )}
-          <Text style={styles.workMeta}>
-            {readEps > 0
-              ? `已读 Ep.${readEps} / 共 ${work.total_eps} 集`
-              : `共 ${work.total_eps} 集`}
-          </Text>
+          {wordListName ? (
+            <Text style={styles.wordListName}>{wordListName}</Text>
+          ) : null}
         </View>
-        <Text style={styles.arrow}>›</Text>
+        {!isUserWork && <Text style={styles.arrow}>›</Text>}
       </TouchableOpacity>
     );
   };
@@ -70,7 +76,7 @@ export default function BookshelfScreen() {
       {works.length === 0 ? (
         <View style={styles.emptyContent}>
           <Text style={styles.emptyText}>选择一部作品开始阅读</Text>
-          <TouchableOpacity onPress={() => router.push('/upload')}>
+          <TouchableOpacity onPress={() => router.push('/upload/novel')}>
             <Text style={styles.emptySubtext}>上传你的小说 →</Text>
           </TouchableOpacity>
         </View>
@@ -87,10 +93,17 @@ export default function BookshelfScreen() {
       {/* FAB always visible */}
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => router.push('/upload')}
+        onPress={() => setSheetVisible(true)}
       >
         <Text style={styles.fabText}>+</Text>
       </TouchableOpacity>
+
+      <ActionSheet
+        visible={sheetVisible}
+        title="添加"
+        actions={fabActions}
+        onClose={() => setSheetVisible(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -103,11 +116,12 @@ const styles = StyleSheet.create({
   list: {
     paddingHorizontal: 16,
     paddingTop: 8,
+    paddingBottom: 96,
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 18,
   },
   cardContent: {
     flex: 1,
@@ -117,15 +131,10 @@ const styles = StyleSheet.create({
     color: Colors.bodyText,
     fontFamily: 'Georgia',
   },
-  workTitleEn: {
-    fontSize: 13,
-    color: Colors.secondary,
-    marginTop: 2,
-  },
-  workMeta: {
+  wordListName: {
     fontSize: 12,
     color: Colors.secondary,
-    marginTop: 4,
+    marginTop: 2,
   },
   arrow: {
     fontSize: 22,
@@ -155,14 +164,15 @@ const styles = StyleSheet.create({
   fab: {
     position: 'absolute',
     bottom: 32,
-    alignSelf: 'center',
+    left: '50%',
+    transform: [{ translateX: -24 }],
     width: 48,
     height: 48,
     borderRadius: 24,
     backgroundColor: Colors.leftBubble,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
+    shadowColor: Colors.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.06,
     shadowRadius: 4,

@@ -1,11 +1,19 @@
 import { useEffect, useState } from 'react';
-import { Stack, Link } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { View, Text, ActivityIndicator, StyleSheet, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  ActivityIndicator,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
 import { Colors } from '@/src/theme/colors';
+import { Ionicons } from '@expo/vector-icons';
 import { initDatabase } from '@/src/db/init';
 
 export default function RootLayout() {
+  const router = useRouter();
   const [dbReady, setDbReady] = useState(false);
   const [dbError, setDbError] = useState<string | null>(null);
 
@@ -55,11 +63,14 @@ export default function RootLayout() {
           name="index"
           options={{
             title: 'VocabFiction',
-            headerTitleStyle: { fontSize: 14, color: Colors.secondary },
             headerRight: () => (
-              <Link href="/settings" style={{ paddingHorizontal: 8 }}>
-                <Text style={{ fontSize: 14, color: Colors.secondary }}>⚙</Text>
-              </Link>
+              <TouchableOpacity
+                onPress={() => router.push('/settings')}
+                hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                style={{ padding: 4 }}
+              >
+                <Ionicons name="settings-outline" size={22} color={Colors.secondary} />
+              </TouchableOpacity>
             ),
           }}
         />
@@ -67,18 +78,15 @@ export default function RootLayout() {
           name="reader/[workId]"
           options={{ headerShown: false }}
         />
-        <Stack.Screen
-          name="upload"
-          options={{ title: '上传作品' }}
-        />
+        <Stack.Screen name="upload/novel" options={{ title: '上传小说' }} />
+        <Stack.Screen name="upload/wordlist" options={{ title: '上传词表' }} />
+        <Stack.Screen name="work/[workId]/manage" options={{ title: '管理作品' }} />
         <Stack.Screen
           name="settings"
           options={{ title: '设置', presentation: 'modal' }}
         />
-        <Stack.Screen
-          name="api-settings"
-          options={{ title: 'API 设置' }}
-        />
+        <Stack.Screen name="api-settings" options={{ title: 'API 设置' }} />
+        <Stack.Screen name="settings/word-lists" options={{ title: '词表管理' }} />
       </Stack>
     </>
   );

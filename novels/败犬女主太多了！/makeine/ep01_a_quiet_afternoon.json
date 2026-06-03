@@ -9,7 +9,12 @@
       "type": "narration",
       "text": "The semester is finally over.",
       "marks": [
-        { "word": "semester", "index": 1, "definition": "学期", "is_new": true }
+        {
+          "word": "semester",
+          "index": 1,
+          "definition": "学期",
+          "is_new": true
+        }
       ]
     },
     {
@@ -26,7 +31,12 @@
       "type": "narration",
       "text": "This — right here — is real leisure.",
       "marks": [
-        { "word": "leisure", "index": 7, "definition": "闲暇", "is_new": true }
+        {
+          "word": "leisure",
+          "index": 7,
+          "definition": "闲暇",
+          "is_new": true
+        }
       ]
     },
     {
@@ -38,8 +48,18 @@
       "type": "narration",
       "text": "Every page I can anticipate. Every sentence I can appreciate.",
       "marks": [
-        { "word": "anticipate", "index": 4, "definition": "期待", "is_new": true },
-        { "word": "appreciate", "index": 9, "definition": "欣赏", "is_new": true }
+        {
+          "word": "anticipate",
+          "index": 4,
+          "definition": "期待",
+          "is_new": true
+        },
+        {
+          "word": "appreciate",
+          "index": 9,
+          "definition": "欣赏",
+          "is_new": true
+        }
       ]
     },
     {
@@ -56,7 +76,12 @@
       "type": "narration",
       "text": "My mood lifts just looking at the cover.",
       "marks": [
-        { "word": "mood", "index": 1, "definition": "心情", "is_new": true }
+        {
+          "word": "mood",
+          "index": 1,
+          "definition": "心情",
+          "is_new": true
+        }
       ]
     },
     {
@@ -88,7 +113,12 @@
       "type": "narration",
       "text": "So I focus.",
       "marks": [
-        { "word": "focus", "index": 2, "definition": "集中", "is_new": true }
+        {
+          "word": "focus",
+          "index": 2,
+          "definition": "集中",
+          "is_new": true
+        }
       ]
     },
     {
@@ -100,7 +130,12 @@
       "type": "narration",
       "text": "I consume fries. Methodically. One by one.",
       "marks": [
-        { "word": "consume", "index": 1, "definition": "消耗, 吃", "is_new": true }
+        {
+          "word": "consume",
+          "index": 1,
+          "definition": "消耗, 吃",
+          "is_new": true
+        }
       ]
     },
     {
@@ -162,12 +197,40 @@
     }
   ],
   "vocab": [
-    { "word": "semester", "definition": "学期", "is_new": true },
-    { "word": "leisure", "definition": "闲暇", "is_new": true },
-    { "word": "anticipate", "definition": "期待", "is_new": true },
-    { "word": "appreciate", "definition": "欣赏", "is_new": true },
-    { "word": "mood", "definition": "心情", "is_new": true },
-    { "word": "focus", "definition": "集中", "is_new": true },
-    { "word": "consume", "definition": "消耗, 吃", "is_new": true }
+    {
+      "word": "semester",
+      "definition": "学期",
+      "is_new": true
+    },
+    {
+      "word": "leisure",
+      "definition": "闲暇",
+      "is_new": true
+    },
+    {
+      "word": "anticipate",
+      "definition": "期待",
+      "is_new": true
+    },
+    {
+      "word": "appreciate",
+      "definition": "欣赏",
+      "is_new": true
+    },
+    {
+      "word": "mood",
+      "definition": "心情",
+      "is_new": true
+    },
+    {
+      "word": "focus",
+      "definition": "集中",
+      "is_new": true
+    },
+    {
+      "word": "consume",
+      "definition": "消耗, 吃",
+      "is_new": true
+    }
   ]
 }

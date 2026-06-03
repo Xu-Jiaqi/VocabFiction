@@ -8,7 +8,6 @@ import {
   AccessibilityInfo,
   BackHandler,
   useWindowDimensions,
-  Platform,
   type ListRenderItemInfo,
 } from 'react-native';
 import Animated, {
@@ -20,6 +19,7 @@ import Animated, {
   cancelAnimation,
 } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/src/theme/colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { loadEpisode } from '@/src/services/episode-loader';
@@ -34,6 +34,8 @@ import { DictionaryPanel } from '@/src/components/DictionaryPanel';
 import { ActionSheet } from '@/src/components/ActionSheet';
 import type { ActionItem } from '@/src/components/ActionSheet';
 import { PlainTextReader } from '@/src/components/PlainTextReader';
+import { EpisodeEndPanel } from '@/src/components/EpisodeEndPanel';
+import { EpisodeSidebar, SIDEBAR_WIDTH } from '@/src/components/EpisodeSidebar';
 import { loadPlainText } from '@/src/services/episode-loader';
 import {
   saveCustomAvatar,
@@ -45,7 +47,7 @@ import * as ImagePicker from 'expo-image-picker';
 import type { Episode, Message } from '@/src/models/episode';
 import type { Work } from '@/src/models/work';
 
-const CARD_HEIGHT = 100;
+const TOP_BAR_OFFSET = 48;
 const SWIPE_THRESHOLD = 6;
 const TAP_THRESHOLD = 5;
 // 在 prefers-reduced-motion 开启时使用的最短动效时长（接近"瞬时"）
@@ -80,13 +82,6 @@ export default function ReaderScreen() {
   const [avatarActions, setAvatarActions] = useState<ActionItem[]>([]);
   const [reduceMotion, setReduceMotion] = useState(false);
 
-  // Vocab popup — positioned near tapped word
-  const [vocabPopup, setVocabPopup] = useState<{
-    word: string;
-    definition: string;
-    x: number;
-    y: number;
-  } | null>(null);
   // Dictionary panel at top
   const [dictWord, setDictWord] = useState<string | null>(null);
   // Sidebar state
@@ -94,6 +89,8 @@ export default function ReaderScreen() {
   const [barsActive, setBarsActive] = useState(false);
   const [fontScale, setFontScale] = useState(1);
   const [readingMode, setReadingMode] = useState<ReadingMode>('chat');
+  const [plainText, setPlainText] = useState<string | null>(null);
+  const [episodeTitles, setEpisodeTitles] = useState<Record<number, string>>({});
 
   // Reanimated 共享值
   const dictAnim = useSharedValue(0);
@@ -231,18 +228,18 @@ export default function ReaderScreen() {
       setLoading(true);
       setEpisodeDone(false);
       hasInitialScrolled.current = false;
-      setVocabPopup(null);
       cancelAnimation(dictAnim);
       dictAnim.value = 0;
       setDictWord(null);
-      const ep = loadEpisode(workId, epNum);
+      const ep = await loadEpisode(workId, epNum);
       setEpisode(ep);
       setCurrentEp(epNum);
       setCurrentMsg(msgIdx);
       if (ep && msgIdx > ep.messages.length) setEpisodeDone(true);
       setLoading(false);
     },
-    [workId, dictAnim],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [workId],
   );
 
   useEffect(() => {
@@ -258,7 +255,49 @@ export default function ReaderScreen() {
       await loadEp(p?.current_ep ?? 1, p?.current_msg ?? 0);
     }
     init();
-  }, [workId, loadEp]);
+  }, [workId]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    let cancelled = false;
+    setPlainText(null);
+    loadPlainText(workId)
+      .then((text) => {
+        if (!cancelled) setPlainText(text);
+      })
+      .catch((e) => {
+        console.error('[Reader] Load plain text:', (e as Error)?.message ?? String(e));
+        if (!cancelled) setPlainText(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [workId]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadEpisodeTitles() {
+      if (!work) {
+        setEpisodeTitles({});
+        return;
+      }
+      const titles: Record<number, string> = {};
+      for (let epNum = 1; epNum <= work.total_eps; epNum++) {
+        const ep = await loadEpisode(workId, epNum);
+        titles[epNum] = ep?.meta.title ?? '';
+      }
+      if (!cancelled) setEpisodeTitles(titles);
+    }
+
+    loadEpisodeTitles().catch((e) => {
+      console.error('[Reader] Load episode titles:', (e as Error)?.message ?? String(e));
+      if (!cancelled) setEpisodeTitles({});
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [work, workId]);
 
   useEffect(() => {
     if (episodeDone && !isRevealing.current) {
@@ -281,19 +320,12 @@ export default function ReaderScreen() {
   );
 
   const scrollToLatest = useCallback(() => {
-    if (!flatListRef.current || layoutHeight.current === 0) return;
-    // 在 Reanimated 里用 withTiming 滚动（用 UI 线程 worklet）
-    const target = Math.max(0, contentHeight.current - layoutHeight.current + 100);
-    flatListRef.current.scrollToOffset({ offset: target, animated: !reduceMotion });
+    flatListRef.current?.scrollToEnd({ animated: !reduceMotion });
   }, [reduceMotion]);
 
   const handleTap = useCallback(() => {
     if (dictWord) {
       hideDictPanel();
-      return;
-    }
-    if (vocabPopup) {
-      setVocabPopup(null);
       return;
     }
     if (!episode || episodeDone) return;
@@ -317,7 +349,6 @@ export default function ReaderScreen() {
     }, reduceMotion ? 0 : 80);
   }, [
     dictWord,
-    vocabPopup,
     episode,
     currentMsg,
     episodeDone,
@@ -372,28 +403,17 @@ export default function ReaderScreen() {
   );
 
   const handleWordTapped = useCallback(
-    (word: string, definition: string) => {
+    (word: string, _definition: string) => {
       wordWasTapped.current = true;
       hideBars();
-      const pos = touchStart.current;
-      const x = pos?.x ?? 100;
-      const y = pos?.y ?? 300;
-      setVocabPopup({ word, definition, x, y });
-      if (y < CARD_HEIGHT + 80) {
-        const diff = CARD_HEIGHT + 80 - y;
-        flatListRef.current?.scrollToOffset({
-          offset: Math.max(0, (contentHeight.current - layoutHeight.current) - diff),
-          animated: false,
-        });
-      }
+      showDictPanel(word);
     },
-    [hideBars],
+    [hideBars, showDictPanel],
   );
 
   const handleExpandWord = useCallback(
     (word: string) => {
       wordWasTapped.current = true;
-      setVocabPopup(null);
       showDictPanel(word);
     },
     [showDictPanel],
@@ -508,19 +528,32 @@ export default function ReaderScreen() {
           fontScale={fontScale}
           isNewSpeaker={isNewSpeaker(item, index)}
           onWordTap={handleWordTapped}
-          onExpandWord={handleExpandWord}
           onAvatarPress={handleAvatarPress}
           avatarVersion={avatarVersion}
         />
       </AnimatedMessage>
     ),
-    [workId, fontScale, isNewSpeaker, handleWordTapped, handleExpandWord, handleAvatarPress, avatarVersion],
+    [workId, fontScale, isNewSpeaker, handleWordTapped, handleAvatarPress, avatarVersion],
   );
 
   const keyExtractor = useCallback(
     (_item: Message, index: number) => `ep${currentEp}-msg${index}`,
     [currentEp],
   );
+
+  const initialRenderCount = Math.max(1, visibleMessages.length);
+
+  const scrollToRestoredPosition = useCallback(() => {
+    if (hasInitialScrolled.current || currentMsg <= 0) return;
+    if (!flatListRef.current || layoutHeight.current === 0 || contentHeight.current === 0) return;
+
+    hasInitialScrolled.current = true;
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        flatListRef.current?.scrollToEnd({ animated: false });
+      });
+    });
+  }, [currentMsg]);
 
   // 动画样式
   const screenStyle = useAnimatedStyle(() => ({
@@ -535,7 +568,7 @@ export default function ReaderScreen() {
     opacity: dictAnim.value,
     transform: [
       {
-        translateY: -30 + dictAnim.value * 30,
+        translateY: -30 + dictAnim.value * 30 + barsOpacity.value * TOP_BAR_OFFSET,
       },
     ],
   }));
@@ -547,7 +580,7 @@ export default function ReaderScreen() {
   const sidebarStyle = useAnimatedStyle(() => ({
     transform: [
       {
-        translateX: -220 + sidebarAnim.value * 220,
+        translateX: -SIDEBAR_WIDTH + sidebarAnim.value * SIDEBAR_WIDTH,
       },
     ],
   }));
@@ -570,8 +603,17 @@ export default function ReaderScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.statusBar}>
-          <Pressable onPress={() => router.back()} hitSlop={12}>
-            <Text style={styles.backButton}>← 书架</Text>
+          <Pressable
+            style={styles.backButton}
+            onPress={() => router.back()}
+            hitSlop={12}
+          >
+            <Ionicons
+              name="chevron-back"
+              size={20}
+              color={Colors.secondary}
+            />
+            <Text style={styles.backButtonText}>书架</Text>
           </Pressable>
           <Text style={styles.title}>{work?.title ?? workId}</Text>
           <Text style={styles.episodeLabel}>Ep.{currentEp}</Text>
@@ -586,12 +628,6 @@ export default function ReaderScreen() {
   const totalEps = work?.total_eps ?? 1;
   const progress =
     episode.messages.length > 0 ? (currentMsg / episode.messages.length) * 100 : 0;
-
-  const cardOnRight = vocabPopup ? vocabPopup.x < screenWidth * 0.5 : true;
-  const cardLeft = cardOnRight
-    ? Math.max(8, Math.min(vocabPopup?.x ?? 100, screenWidth - 180))
-    : undefined;
-  const cardTop = vocabPopup ? Math.max(60, vocabPopup.y - CARD_HEIGHT - 8) : 0;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -614,8 +650,17 @@ export default function ReaderScreen() {
           pointerEvents={barsActive ? 'box-none' : 'none'}
         >
           <View style={styles.statusBar}>
-            <Pressable onPress={() => router.back()} hitSlop={12}>
-              <Text style={styles.backButton}>← 书架</Text>
+            <Pressable
+              style={styles.backButton}
+              onPress={() => router.back()}
+              hitSlop={12}
+            >
+              <Ionicons
+                name="chevron-back"
+                size={20}
+                color={Colors.secondary}
+              />
+              <Text style={styles.backButtonText}>书架</Text>
             </Pressable>
             <Text style={styles.title} numberOfLines={1}>
               {episode.meta.title}
@@ -640,6 +685,9 @@ export default function ReaderScreen() {
               data={visibleMessages}
               renderItem={renderItem}
               keyExtractor={keyExtractor}
+              initialNumToRender={initialRenderCount}
+              maxToRenderPerBatch={initialRenderCount}
+              removeClippedSubviews={false}
               contentContainerStyle={styles.scrollContent}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
@@ -650,19 +698,8 @@ export default function ReaderScreen() {
               onTouchEnd={handleTouchEnd}
               onContentSizeChange={(_w, h) => {
                 contentHeight.current = h;
-                if (!hasInitialScrolled.current && currentMsg > 0) {
-                  hasInitialScrolled.current = true;
-                  setTimeout(
-                    () =>
-                      flatListRef.current?.scrollToOffset({
-                        offset: Math.max(0, h - layoutHeight.current),
-                        animated: false,
-                      }),
-                    50,
-                  );
-                }
+                scrollToRestoredPosition();
                 if (pendingRevealScroll.current > 0) {
-                  const cardH = pendingRevealScroll.current;
                   pendingRevealScroll.current = 0;
                   flatListRef.current?.scrollToOffset({
                     offset: Math.max(0, h - layoutHeight.current),
@@ -678,6 +715,7 @@ export default function ReaderScreen() {
               }}
               onLayout={(e) => {
                 layoutHeight.current = e.nativeEvent.layout.height;
+                scrollToRestoredPosition();
               }}
               onScroll={(e) => {
                 scrollOffset.current = e.nativeEvent.contentOffset.y;
@@ -690,66 +728,12 @@ export default function ReaderScreen() {
               }
               ListFooterComponent={
                 episodeDone ? (
-                  <View style={styles.endPanel}>
-                    <Text style={styles.endTitle}>本集读完</Text>
-                    <Text style={styles.endSubtitle}>
-                      遇见 {episode.vocab.length} 个词
-                    </Text>
-                    <View style={styles.endColumns}>
-                      {/* 新词 */}
-                      <View style={styles.endColumn}>
-                        <Text style={styles.endColumnTitle}>新词</Text>
-                        {newWords.length > 0 ? (
-                          newWords.map((item, i) => (
-                            <Pressable
-                              key={`end-new-${i}`}
-                              style={({ pressed }) => [
-                                styles.vocabRow,
-                                pressed && { backgroundColor: Colors.pressedOverlay },
-                              ]}
-                              onPress={() => handleExpandWord(item.word)}
-                            >
-                              <Text style={styles.vocabRowNew} numberOfLines={1}>
-                                {item.word}
-                                <Text style={styles.vocabRowDef}>
-                                  {'  '}
-                                  {item.definition}
-                                </Text>
-                              </Text>
-                            </Pressable>
-                          ))
-                        ) : (
-                          <View style={styles.endPlaceholder}>
-                            <Text style={styles.endPlaceholderText}>本集无新词</Text>
-                          </View>
-                        )}
-                      </View>
-                      {/* 旧词 */}
-                      <View style={styles.endColumn}>
-                        <Text style={styles.endColumnTitle}>旧词</Text>
-                        {reviewWords.length > 0 ? (
-                          reviewWords.map((item, i) => (
-                            <Pressable
-                              key={`end-review-${i}`}
-                              style={({ pressed }) => [
-                                styles.vocabRow,
-                                pressed && { backgroundColor: Colors.pressedOverlay },
-                              ]}
-                              onPress={() => handleExpandWord(item.word)}
-                            >
-                              <Text style={styles.vocabRowReview} numberOfLines={1}>
-                                {item.word}
-                              </Text>
-                            </Pressable>
-                          ))
-                        ) : (
-                          <View style={styles.endPlaceholder}>
-                            <Text style={styles.endPlaceholderText}>本集无旧词</Text>
-                          </View>
-                        )}
-                      </View>
-                    </View>
-                  </View>
+                  <EpisodeEndPanel
+                    vocabCount={episode.vocab.length}
+                    newWords={newWords}
+                    reviewWords={reviewWords}
+                    onExpandWord={handleExpandWord}
+                  />
                 ) : revealSpacer > 0 ? (
                   <View style={{ height: revealSpacer }} />
                 ) : (
@@ -770,32 +754,9 @@ export default function ReaderScreen() {
         {/* Paragraph mode */}
         {readingMode === 'paragraph' && (
           <PlainTextReader
-            text={loadPlainText(workId) ?? 'Chapter not found'}
+            text={plainText ?? 'Chapter not found'}
             fontSize={13 * fontScale}
           />
-        )}
-
-        {/* Vocab popup */}
-        {vocabPopup && (
-          <View style={styles.vocabPopupOverlay} pointerEvents="box-none">
-            <Pressable
-              style={styles.vocabPopupBackdrop}
-              onPress={() => setVocabPopup(null)}
-            />
-            <Pressable
-              style={({ pressed }) => [
-                styles.vocabPopupCard,
-                cardOnRight
-                  ? { left: cardLeft, top: Math.max(60, cardTop) }
-                  : { right: 8, top: Math.max(60, cardTop) },
-                pressed && { opacity: 0.85 },
-              ]}
-              onPress={() => handleExpandWord(vocabPopup.word)}
-            >
-              <Text style={styles.vocabPopupWord}>{vocabPopup.word}</Text>
-              <Text style={styles.vocabPopupDef}>{vocabPopup.definition}</Text>
-            </Pressable>
-          </View>
         )}
 
         {/* Bottom bar */}
@@ -839,74 +800,18 @@ export default function ReaderScreen() {
 
         {/* Sidebar */}
         {sidebarOpen && (
-          <View
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
+          <EpisodeSidebar
+            currentEp={currentEp}
+            totalEps={totalEps}
+            titles={episodeTitles}
+            overlayStyle={overlayStyle}
+            sidebarStyle={sidebarStyle}
+            onClose={toggleSidebar}
+            onSelectEpisode={(epNum) => {
+              goToEpisode(epNum);
+              toggleSidebar();
             }}
-            pointerEvents="box-none"
-          >
-            <Animated.View style={[styles.overlay, overlayStyle]}>
-              <Pressable
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                }}
-                onPress={toggleSidebar}
-              />
-            </Animated.View>
-            <Animated.View style={[styles.sidebar, sidebarStyle]}>
-              <View style={styles.sidebarHeader}>
-                <Text style={styles.sidebarTitle}>选集</Text>
-                <Pressable
-                  onPress={toggleSidebar}
-                  hitSlop={12}
-                  style={({ pressed }) => [
-                    styles.sidebarCloseBtn,
-                    pressed && { backgroundColor: Colors.pressedOverlay },
-                  ]}
-                >
-                  <Text style={styles.sidebarClose}>✕</Text>
-                </Pressable>
-              </View>
-              <FlatList
-                style={styles.sidebarList}
-                data={Array.from({ length: totalEps }, (_, i) => i + 1)}
-                keyExtractor={(n) => `ep-${n}`}
-                renderItem={({ item: epNum }) => (
-                  <Pressable
-                    style={({ pressed }) => [
-                      styles.sidebarItem,
-                      epNum === currentEp && styles.sidebarItemActive,
-                      pressed && { backgroundColor: Colors.pressedOverlay },
-                    ]}
-                    onPress={() => {
-                      goToEpisode(epNum);
-                      toggleSidebar();
-                    }}
-                  >
-                    <Text
-                      style={[
-                        styles.sidebarItemText,
-                        epNum === currentEp && styles.sidebarItemTextActive,
-                      ]}
-                    >
-                      Ep.{epNum}
-                    </Text>
-                    <Text style={styles.sidebarItemTitle} numberOfLines={1}>
-                      {loadEpisode(workId, epNum)?.meta.title ?? ''}
-                    </Text>
-                  </Pressable>
-                )}
-              />
-            </Animated.View>
-          </View>
+          />
         )}
       </Animated.View>
 
@@ -930,7 +835,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 30,
-    backgroundColor: Colors.mainBg,
+    backgroundColor: Colors.panelBg,
   },
   statusBar: {
     flexDirection: 'row',
@@ -939,8 +844,17 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     gap: 8,
+    backgroundColor: Colors.panelBg,
+    borderBottomWidth: 1,
+    borderBottomColor: Colors.divider,
   },
-  backButton: { fontSize: 13, color: Colors.secondary, minWidth: 50 },
+  backButton: {
+    minWidth: 50,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 2,
+  },
+  backButtonText: { fontSize: 13, color: Colors.secondary },
   title: {
     fontSize: 14,
     fontWeight: '500',
@@ -983,87 +897,7 @@ const styles = StyleSheet.create({
     fontFamily: 'Georgia',
   },
   loadingText: { fontSize: 14, color: Colors.secondary },
-  // Vocab popup
-  vocabPopupOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    zIndex: 100,
-  },
-  vocabPopupBackdrop: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
-  vocabPopupCard: {
-    position: 'absolute',
-    backgroundColor: Colors.panelBg,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    shadowColor: '#2C2416',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-    minWidth: 150,
-  },
-  vocabPopupWord: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: Colors.bodyText,
-    marginBottom: 2,
-  },
-  vocabPopupDef: { fontSize: 14, color: Colors.secondary, marginBottom: 6 },
-  // End panel
-  endPanel: {
-    backgroundColor: Colors.panelBg,
-    borderRadius: 16,
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-    marginTop: 24,
-    marginHorizontal: 12,
-    marginBottom: 80,
-  },
-  endTitle: { fontSize: 14, color: Colors.secondary, marginBottom: 4 },
-  endSubtitle: {
-    fontSize: 18,
-    color: Colors.bodyText,
-    fontFamily: 'Georgia',
-    marginBottom: 16,
-  },
-  vocabListInline: { width: '100%', marginTop: 12 },
-  endColumns: { flexDirection: 'row', gap: 12, marginTop: 12 },
-  endColumn: { flex: 1 },
-  endColumnTitle: { fontSize: 13, color: Colors.secondary, marginBottom: 8 },
-  endPlaceholder: {
-    paddingVertical: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: Colors.divider,
-    borderRadius: 8,
-    borderStyle: 'dashed',
-  },
-  endPlaceholderText: { fontSize: 13, color: Colors.secondary },
-  vocabRow: {
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    height: 44,
-    justifyContent: 'center',
-    borderRadius: 6,
-    overflow: 'hidden',
-  },
-  vocabRowNew: {
-    fontSize: 15,
-    color: Colors.bodyText,
-    fontFamily: 'Georgia',
-  },
-  vocabRowReview: {
-    fontSize: 15,
-    color: Colors.bodyText,
-    fontWeight: '600',
-    fontFamily: 'Georgia',
-  },
-  vocabRowDef: { fontSize: 13, color: Colors.definition, fontWeight: '400' },
+
   // Bottom bar
   bottomBar: {
     position: 'absolute',
@@ -1093,52 +927,5 @@ const styles = StyleSheet.create({
   },
   bottomBarEpText: { fontSize: 15, color: Colors.bodyText, fontWeight: '500' },
   epNavDisabled: { color: Colors.divider },
-  // Sidebar
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: Colors.scrim,
-    zIndex: 300,
-  },
-  sidebar: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    bottom: 0,
-    width: 260,
-    backgroundColor: Colors.mainBg,
-    zIndex: 301,
-    paddingTop: 50,
-  },
-  sidebarHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.divider,
-  },
-  sidebarTitle: { fontSize: 16, color: Colors.bodyText, fontWeight: '500' },
-  sidebarCloseBtn: {
-    padding: 8,
-    borderRadius: 6,
-  },
-  sidebarClose: { fontSize: 18, color: Colors.secondary },
-  sidebarList: { flex: 1 },
-  sidebarItem: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    minHeight: 56,
-    borderBottomWidth: 1,
-    borderBottomColor: Colors.divider,
-    justifyContent: 'center',
-  },
-  sidebarItemActive: { backgroundColor: Colors.leftBubble },
-  sidebarItemText: { fontSize: 14, color: Colors.bodyText, fontWeight: '500' },
-  sidebarItemTextActive: { color: Colors.bodyText },
-  sidebarItemTitle: { fontSize: 12, color: Colors.secondary, marginTop: 2 },
+
 });

@@ -5,6 +5,7 @@ export interface Work {
   author: string | null;
   total_eps: number;
   source: 'builtin' | 'user';
+  word_list_id: string | null;
   created_at: string;
   updated_at: string;
 }

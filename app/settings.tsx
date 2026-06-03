@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Colors } from '@/src/theme/colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { getSetting, setSetting } from '@/src/db/settings';
-
-type FontSize = 'small' | 'medium' | 'large';
-type ReadingMode = 'chat' | 'paragraph';
+import type { FontSize, ReadingMode } from '@/src/models/setting';
 
 const FONT_SIZES: { key: FontSize; label: string }[] = [
   { key: 'small', label: '小' },
@@ -39,20 +37,19 @@ export default function SettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['bottom']}>
       <View style={styles.content}>
-        <Text style={styles.title}>设置</Text>
-
         {/* Font size */}
         <View style={styles.section}>
           <Text style={styles.label}>字体大小</Text>
           <View style={styles.segmentedControl}>
             {FONT_SIZES.map(({ key, label }) => (
-              <TouchableOpacity
+              <Pressable
                 key={key}
-                style={[
+                style={({ pressed }) => [
                   styles.segment,
                   fontSize === key && styles.segmentActive,
+                  pressed && { backgroundColor: Colors.pressedOverlay },
                 ]}
                 onPress={() => handleFontSize(key)}
               >
@@ -64,7 +61,7 @@ export default function SettingsScreen() {
                 >
                   {label}
                 </Text>
-              </TouchableOpacity>
+              </Pressable>
             ))}
           </View>
         </View>
@@ -73,10 +70,11 @@ export default function SettingsScreen() {
         <View style={styles.section}>
           <Text style={styles.label}>阅读模式</Text>
           <View style={styles.segmentedControl}>
-            <TouchableOpacity
-              style={[
+            <Pressable
+              style={({ pressed }) => [
                 styles.segment,
                 readingMode === 'chat' && styles.segmentActive,
+                pressed && { backgroundColor: Colors.pressedOverlay },
               ]}
               onPress={() => handleReadingMode('chat')}
             >
@@ -88,11 +86,12 @@ export default function SettingsScreen() {
               >
                 对话体
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
+            </Pressable>
+            <Pressable
+              style={({ pressed }) => [
                 styles.segment,
                 readingMode === 'paragraph' && styles.segmentActive,
+                pressed && { backgroundColor: Colors.pressedOverlay },
               ]}
               onPress={() => handleReadingMode('paragraph')}
             >
@@ -104,24 +103,37 @@ export default function SettingsScreen() {
               >
                 传统
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
 
         <View style={styles.divider} />
 
-        <TouchableOpacity
-          style={styles.linkRow}
+        <Pressable
+          style={({ pressed }) => [
+            styles.linkRow,
+            pressed && { backgroundColor: Colors.pressedOverlay },
+          ]}
           onPress={() => router.push('/api-settings')}
         >
           <Text style={styles.linkText}>API 设置</Text>
           <Text style={styles.arrow}>→</Text>
-        </TouchableOpacity>
+        </Pressable>
 
-        <TouchableOpacity style={styles.linkRow}>
-          <Text style={styles.linkText}>关于 VocabFiction</Text>
+        <Pressable
+          style={({ pressed }) => [
+            styles.linkRow,
+            pressed && { backgroundColor: Colors.pressedOverlay },
+          ]}
+          onPress={() => router.push('/settings/word-lists')}
+        >
+          <Text style={styles.linkText}>词表管理</Text>
           <Text style={styles.arrow}>→</Text>
-        </TouchableOpacity>
+        </Pressable>
+
+        <View style={styles.linkRow}>
+          <Text style={styles.linkText}>关于 VocabFiction</Text>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -135,13 +147,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     paddingHorizontal: 24,
-    paddingTop: 32,
-  },
-  title: {
-    fontSize: 20,
-    color: Colors.bodyText,
-    fontWeight: '400',
-    marginBottom: 32,
+    paddingTop: 0,
   },
   section: {
     flexDirection: 'row',
@@ -155,11 +161,15 @@ const styles = StyleSheet.create({
   },
   segmentedControl: {
     flexDirection: 'row',
+    gap: 4,
   },
+  // 段控：每个 segment 加内边距到 44pt 高
   segment: {
-    paddingHorizontal: 16,
-    paddingVertical: 6,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
     borderRadius: 8,
+    minHeight: 44,
+    justifyContent: 'center',
   },
   segmentActive: {
     backgroundColor: Colors.leftBubble,
@@ -182,6 +192,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 16,
+    paddingHorizontal: 8,
+    marginHorizontal: -8,
+    minHeight: 44,
   },
   linkText: {
     fontSize: 15,

@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity } from 'react-native';
 import { Colors } from '@/src/theme/colors';
-import { getAvatarSource, getCustomAvatarUri, checkCustomAvatarExists } from '@/src/services/character-loader';
+import {
+  getAvatarSource,
+  getCustomAvatarUri,
+  checkCustomAvatarExists,
+} from '@/src/services/character-loader';
 
 interface ChatAvatarProps {
   workId: string;
@@ -12,17 +16,25 @@ interface ChatAvatarProps {
   avatarVersion?: number;
 }
 
-export function ChatAvatar({ workId, name, side, onPress, avatarVersion }: ChatAvatarProps) {
+export function ChatAvatar({
+  workId,
+  name,
+  side,
+  onPress,
+  avatarVersion,
+}: ChatAvatarProps) {
   const builtinSource = getAvatarSource(workId, name);
   const [customUri, setCustomUri] = useState<string | null>(null);
 
   useEffect(() => {
     const baseUri = getCustomAvatarUri(workId, name);
     if (baseUri) {
-      checkCustomAvatarExists(baseUri).then(exists => {
-        // Cache-busting query param forces Image reload when avatarVersion changes
-        setCustomUri(exists ? `${baseUri}?v=${avatarVersion ?? 0}` : null);
-      }).catch(() => setCustomUri(null));
+      checkCustomAvatarExists(baseUri)
+        .then((exists) => {
+          // Cache-busting query param forces Image reload when avatarVersion changes
+          setCustomUri(exists ? `${baseUri}?v=${avatarVersion ?? 0}` : null);
+        })
+        .catch(() => setCustomUri(null));
     } else {
       setCustomUri(null);
     }
@@ -46,6 +58,8 @@ export function ChatAvatar({ workId, name, side, onPress, avatarVersion }: ChatA
       onPress={onPress}
       activeOpacity={onPress ? 0.7 : 1}
       disabled={!onPress}
+      // 36px 头像需补足到 ≥44pt 触摸目标
+      hitSlop={4}
     >
       {content}
     </TouchableOpacity>
@@ -53,12 +67,15 @@ export function ChatAvatar({ workId, name, side, onPress, avatarVersion }: ChatA
 }
 
 const styles = StyleSheet.create({
+  // 4px padding 围绕 36px 头像 = 44pt 触摸目标
   container: {
     marginRight: 8,
+    padding: 4,
   },
   containerRight: {
     marginRight: 0,
     marginLeft: 8,
+    padding: 4,
   },
   avatar: {
     width: 36,

@@ -9,7 +9,12 @@
       "type": "narration",
       "text": "This conflict behind me... I can't un-hear it.",
       "marks": [
-        { "word": "conflict", "index": 1, "definition": "冲突", "is_new": true }
+        {
+          "word": "conflict",
+          "index": 1,
+          "definition": "冲突",
+          "is_new": true
+        }
       ]
     },
     {
@@ -21,7 +26,12 @@
       "type": "narration",
       "text": "I can't focus on anything except the voices.",
       "marks": [
-        { "word": "focus", "index": 2, "definition": "集中", "is_new": false }
+        {
+          "word": "focus",
+          "index": 2,
+          "definition": "集中",
+          "is_new": false
+        }
       ]
     },
     {
@@ -73,7 +83,12 @@
       "name": "Anna",
       "text": "...you dense idiot.",
       "marks": [
-        { "word": "dense", "index": 1, "definition": "迟钝的", "is_new": true }
+        {
+          "word": "dense",
+          "index": 1,
+          "definition": "迟钝的",
+          "is_new": true
+        }
       ]
     },
     {
@@ -87,7 +102,12 @@
       "name": "Anna",
       "text": "She's not the type to confront people about what she wants.",
       "marks": [
-        { "word": "confront", "index": 5, "definition": "面对", "is_new": true }
+        {
+          "word": "confront",
+          "index": 5,
+          "definition": "面对",
+          "is_new": true
+        }
       ]
     },
     {
@@ -124,7 +144,12 @@
       "name": "Anna",
       "text": "POINT IS. She likes you. It's so evident a stranger on the street could tell.",
       "marks": [
-        { "word": "evident", "index": 7, "definition": "明显的", "is_new": true }
+        {
+          "word": "evident",
+          "index": 7,
+          "definition": "明显的",
+          "is_new": true
+        }
       ]
     },
     {
@@ -154,7 +179,12 @@
       "name": "Anna",
       "text": "Don't abandon this because you're scared.",
       "marks": [
-        { "word": "abandon", "index": 1, "definition": "放弃", "is_new": true }
+        {
+          "word": "abandon",
+          "index": 1,
+          "definition": "放弃",
+          "is_new": true
+        }
       ]
     },
     {
@@ -177,7 +207,12 @@
       "name": "Anna",
       "text": "What matters is right in front of you.",
       "marks": [
-        { "word": "matters", "index": 1, "definition": "重要", "is_new": true }
+        {
+          "word": "matters",
+          "index": 1,
+          "definition": "重要",
+          "is_new": true
+        }
       ]
     },
     {
@@ -213,7 +248,12 @@
       "type": "narration",
       "text": "Whatever comes next... was never meant to have an audience.",
       "marks": [
-        { "word": "audience", "index": 9, "definition": "听众", "is_new": true }
+        {
+          "word": "audience",
+          "index": 9,
+          "definition": "听众",
+          "is_new": true
+        }
       ]
     },
     {
@@ -235,13 +275,45 @@
     }
   ],
   "vocab": [
-    { "word": "conflict", "definition": "冲突", "is_new": true },
-    { "word": "focus", "definition": "集中", "is_new": false },
-    { "word": "dense", "definition": "迟钝的", "is_new": true },
-    { "word": "confront", "definition": "面对", "is_new": true },
-    { "word": "evident", "definition": "明显的", "is_new": true },
-    { "word": "abandon", "definition": "放弃", "is_new": true },
-    { "word": "matters", "definition": "重要", "is_new": true },
-    { "word": "audience", "definition": "听众", "is_new": true }
+    {
+      "word": "conflict",
+      "definition": "冲突",
+      "is_new": true
+    },
+    {
+      "word": "focus",
+      "definition": "集中",
+      "is_new": false
+    },
+    {
+      "word": "dense",
+      "definition": "迟钝的",
+      "is_new": true
+    },
+    {
+      "word": "confront",
+      "definition": "面对",
+      "is_new": true
+    },
+    {
+      "word": "evident",
+      "definition": "明显的",
+      "is_new": true
+    },
+    {
+      "word": "abandon",
+      "definition": "放弃",
+      "is_new": true
+    },
+    {
+      "word": "matters",
+      "definition": "重要",
+      "is_new": true
+    },
+    {
+      "word": "audience",
+      "definition": "听众",
+      "is_new": true
+    }
   ]
 }

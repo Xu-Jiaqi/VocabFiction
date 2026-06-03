@@ -1,18 +1,36 @@
 # VocabFiction 数据库表设计
 
-所有数据存储在客户端 expo-sqlite 中。每部作品一个独立的 JSON 文件（episodes），数据库仅存储元数据、进度和设置。
+所有数据存储在客户端：业务元数据、词表、进度和设置存入 expo-sqlite；内置作品使用打包的 episode JSON；用户上传小说当前只保存 UTF-8 原文和作品元数据，不生成 episode JSON。
 
 ## 表一览
 
 | 表名 | 用途 |
 |------|------|
-| `works` | 作品元数据 |
+| `word_lists` | 词表元数据与内容 |
+| `works` | 作品元数据，含绑定词表 |
 | `reading_progress` | 阅读位置记录 |
 | `settings` | 用户设置项 |
 
 > 词汇状态追踪（lemma + definition → is_new + M 计数 + 学会状态）暂不实现，后续版本追加。
 
 ---
+
+## word_lists
+
+每个词表一条记录。内置词表和用户上传词表都在这里登记，作品通过 `works.word_list_id` 绑定词表。
+
+```sql
+CREATE TABLE word_lists (
+  id            TEXT PRIMARY KEY,        -- 唯一标识，如 "builtin-nju-ab"
+  name          TEXT NOT NULL,           -- 展示名称
+  text          TEXT NOT NULL DEFAULT '', -- 词表原文；内置词表可为空占位
+  source        TEXT NOT NULL DEFAULT 'user', -- 'builtin' | 'user'
+  created_at    TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at    TEXT NOT NULL DEFAULT (datetime('now'))
+);
+```
+
+**默认记录：** 启动时写入 `builtin-nju-ab`，作为内置小说默认绑定词表。用户上传词表会生成独立 `wordListId`，并同步保存为当前词表。
 
 ## works
 
@@ -26,10 +44,17 @@ CREATE TABLE works (
   author        TEXT,                    -- 作者（可选）
   total_eps     INTEGER NOT NULL,        -- 总集数
   source        TEXT NOT NULL DEFAULT 'builtin',  -- 'builtin' | 'user'
+  word_list_id  TEXT,                    -- 关联 word_lists.id，可更换
   created_at    TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at    TEXT NOT NULL DEFAULT (datetime('now'))
+  updated_at    TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (word_list_id) REFERENCES word_lists(id) ON DELETE SET NULL
 );
 ```
+
+**作品与词表绑定：**
+- 内置小说默认绑定 `builtin-nju-ab`，可在作品管理页更换。
+- 用户上传小说保存时绑定当前词表；点击书架卡片不进入阅读，长按卡片进入管理页。
+- 用户上传小说当前只保存原文，`total_eps = 0`，不生成 episode JSON。
 
 ## reading_progress
 
@@ -83,6 +108,15 @@ CREATE TABLE settings (
 
 ```sql
 -- 应用首次启动时执行
+CREATE TABLE IF NOT EXISTS word_lists (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  text TEXT NOT NULL DEFAULT '',
+  source TEXT NOT NULL DEFAULT 'user',
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE TABLE IF NOT EXISTS works (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
@@ -90,8 +124,10 @@ CREATE TABLE IF NOT EXISTS works (
   author TEXT,
   total_eps INTEGER NOT NULL,
   source TEXT NOT NULL DEFAULT 'builtin',
+  word_list_id TEXT,
   created_at TEXT NOT NULL DEFAULT (datetime('now')),
-  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+  updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY (word_list_id) REFERENCES word_lists(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS reading_progress (
@@ -114,9 +150,13 @@ CREATE TABLE IF NOT EXISTS settings (
 INSERT OR IGNORE INTO settings (key, value) VALUES ('font_size', 'medium');
 INSERT OR IGNORE INTO settings (key, value) VALUES ('reading_mode', 'chat');
 
+-- 内置词表
+INSERT OR IGNORE INTO word_lists (id, name, text, source)
+VALUES ('builtin-nju-ab', 'NJU词汇表AB类汇总', '', 'builtin');
+
 -- 内置作品
-INSERT OR IGNORE INTO works (id, title, title_en, total_eps, source)
-VALUES ('makeine', '败犬女主太多了！', 'Too Many Losing Heroines!', 3, 'builtin');
+INSERT OR IGNORE INTO works (id, title, title_en, total_eps, source, word_list_id)
+VALUES ('makeine', '败犬女主太多了！', 'Too Many Losing Heroines!', 3, 'builtin', 'builtin-nju-ab');
 ```
 
 ---
@@ -217,7 +257,7 @@ novels/败犬女主太多了！/
 
 **内置作品：** JSON 文件随 App 打包为静态 assets。通过 `require()` 或 `expo-asset` 加载。
 
-**用户上传作品：** 生成后的 JSON 存储在 `documentDirectory/novels/<作品名>/<work_id>/`，与内置作品保持相同的目录结构，加载层用同一套接口读取。
+**用户上传作品：** 当前只保存原文，不生成 episode JSON。目录为 `documentDirectory/novels/<work_id>/plain.txt`，另有 `meta.json` 记录标题、绑定词表和保存时间。用户上传作品出现在书架，但点击卡片不进入 reader；长按进入管理页。
 
 **Episode 发现：** 加载某集时，按文件名模式 `ep<NN>_*.json` 匹配。`works.total_eps` 提供集数上限。
 
@@ -229,10 +269,12 @@ novels/败犬女主太多了！/
 App 启动
   → 首次启动？→ 复制 ecdict_mobile.db 到 documentDirectory
   → 打开 SQLite（documentDirectory/ecdict_mobile.db）
-  → CREATE TABLE IF NOT EXISTS（works, reading_progress, settings）
-  → 插入默认设置和内置作品（INSERT OR IGNORE）
+  → CREATE TABLE IF NOT EXISTS（word_lists, works, reading_progress, settings）
+  → 插入默认设置、内置词表和内置作品（INSERT OR IGNORE）
   → 加载 works 表 → 渲染书架
-  → 用户点击作品 → 从 novels/<作品名>/<work_id>/ 加载当前集 JSON
+  → 用户点击内置作品 → 从 novels/<作品名>/<work_id>/ 加载当前集 JSON
+  → 用户点击上传作品 → 无反应；长按进入作品管理
+  → 作品管理：修改 works.title；更换 works.word_list_id；用户作品可删除本地目录和 works 记录
   → 根据 reading_progress 跳转到对应位置
   → 阅读中：每点击一条消息 → 更新 reading_progress.current_msg
   → 读完一集：current_ep += 1, current_msg = 0, total_read_eps += 1
