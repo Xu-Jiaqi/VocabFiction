@@ -9,6 +9,18 @@ dist/
 .env
 .env.local
 
+# Backend local state
+.backend-git-history/
+ELBackend/.sisyphus/
+ELBackend/.venv/
+ELBackend/.vscode/
+ELBackend/.env
+ELBackend/.pytest_cache/
+ELBackend/.ruff_cache/
+ELBackend/.cache/
+ELBackend/**/__pycache__/
+ELBackend/**/*.pyc
+
 # IDE
 .idea/
 .vscode/

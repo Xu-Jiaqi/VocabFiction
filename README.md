@@ -4,7 +4,7 @@
 
 > A story-driven English vocabulary acquisition tool — read novels, learn words, no memorization required.
 
-VocabFiction turns novels into interactive chat-fiction episodes where English vocabulary words appear naturally in context. Built with Expo and React Native for iOS and Android.
+VocabFiction turns novels into interactive chat-fiction episodes where English vocabulary words appear naturally in context. The monorepo contains an Expo/React Native mobile app and a FastAPI backend for vocabulary, reading progress, and generation workflows.
 
 ## Features
 
@@ -24,6 +24,7 @@ VocabFiction turns novels into interactive chat-fiction episodes where English v
 
 - [Node.js](https://nodejs.org/) 18+
 - [Expo Go](https://expo.dev/go) app installed on your iPhone or Android device
+- Python 3.10 for backend development
 
 ### Run with Expo Go
 
@@ -60,6 +61,20 @@ The app will load and you'll see the bookshelf with the built-in novel. Tap it t
 ### First Launch
 
 On first launch, the app copies the offline dictionary (39MB) to your device. This may take a few seconds on the loading screen. Subsequent launches are instant.
+
+### Run the Backend
+
+The backend lives in `ELBackend/` and exposes APIs under `http://127.0.0.1:8000/api/v1`.
+
+```bash
+cd ELBackend
+python3.10 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+```
+
+Copy `ELBackend/.env.example` to `ELBackend/.env` and set the LLM endpoint credentials before using generation routes.
 
 ## Project Structure
 
@@ -102,7 +117,12 @@ VocabFiction/
 ├── assets/
 │   └── ecdict_mobile.db          # Offline English-Chinese dictionary
 ├── documents/                    # Product specs and design docs
-└── word_lists/                   # Vocabulary word lists
+├── word_lists/                   # Vocabulary word lists
+└── ELBackend/                    # FastAPI backend
+    ├── app/                      # API routes, services, models, storage
+    ├── tests/                    # pytest suite
+    ├── documents/                # backend architecture/API docs
+    └── requirements.txt          # Python dependencies
 ```
 
 ## Tech Stack
@@ -115,6 +135,8 @@ VocabFiction/
 | Storage | expo-file-system, expo-secure-store |
 | Animation | React Native Animated API |
 | Dictionary | ECDICT (339K entries, lemma resolution via exchange field) |
+| Backend API | FastAPI + Pydantic v2 + Uvicorn |
+| Backend tests | pytest + ruff |
 
 ## Implementation Status
 
