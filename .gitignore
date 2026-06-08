@@ -21,6 +21,11 @@ ELBackend/.cache/
 ELBackend/**/__pycache__/
 ELBackend/**/*.pyc
 
+# Android signing
+android/app/*.jks
+android/app/*release*.keystore
+android/app/upload*.keystore
+
 # IDE
 .idea/
 .vscode/

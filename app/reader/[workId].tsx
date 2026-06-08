@@ -37,6 +37,8 @@ import { PlainTextReader } from '@/src/components/PlainTextReader';
 import { EpisodeEndPanel } from '@/src/components/EpisodeEndPanel';
 import { EpisodeSidebar, SIDEBAR_WIDTH } from '@/src/components/EpisodeSidebar';
 import { loadPlainText } from '@/src/services/episode-loader';
+import { completeLocalEpisode } from '@/src/services/generation/reading';
+import type { EpisodeReadingLog } from '@/src/services/generation/types';
 import {
   saveCustomAvatar,
   deleteCustomAvatar,
@@ -44,7 +46,7 @@ import {
   checkCustomAvatarExists,
 } from '@/src/services/character-loader';
 import * as ImagePicker from 'expo-image-picker';
-import type { Episode, Message } from '@/src/models/episode';
+import type { Episode, Mark, Message } from '@/src/models/episode';
 import type { Work } from '@/src/models/work';
 
 const TOP_BAR_OFFSET = 48;
@@ -63,6 +65,35 @@ const ANIM_DURATION = {
 
 function getDuration(nominal: number, reduceMotion: boolean) {
   return reduceMotion ? REDUCED_MOTION_DURATION : nominal;
+}
+
+function buildEpisodeReadingLog(
+  episode: Episode,
+  clickedCounts: Record<string, number>,
+): EpisodeReadingLog {
+  const byItemId = new Map<string, EpisodeReadingLog['word_logs'][number]>();
+
+  for (const message of episode.messages) {
+    for (const mark of message.marks) {
+      if (!mark.item_id) continue;
+
+      const item = byItemId.get(mark.item_id) ?? {
+        item_id: mark.item_id,
+        word: mark.word,
+        meaning: mark.definition,
+        appeared: 0,
+        clicked: 0,
+      };
+      item.appeared += 1;
+      item.clicked = Math.min(clickedCounts[mark.item_id] ?? 0, item.appeared);
+      byItemId.set(mark.item_id, item);
+    }
+  }
+
+  return {
+    episode_id: episode.meta.ep,
+    word_logs: Array.from(byItemId.values()),
+  };
 }
 
 export default function ReaderScreen() {
@@ -114,6 +145,8 @@ export default function ReaderScreen() {
   const barsTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasInitialScrolled = useRef(false);
   const lastScrollY = useRef(0);
+  const clickedCountsRef = useRef<Record<string, number>>({});
+  const submittedEpisodeLogs = useRef(new Set<string>());
 
   // 监听系统动效降级偏好
   useEffect(() => {
@@ -227,6 +260,7 @@ export default function ReaderScreen() {
     async (epNum: number, msgIdx: number) => {
       setLoading(true);
       setEpisodeDone(false);
+      clickedCountsRef.current = {};
       hasInitialScrolled.current = false;
       cancelAnimation(dictAnim);
       dictAnim.value = 0;
@@ -304,6 +338,25 @@ export default function ReaderScreen() {
       showBars();
     }
   }, [episodeDone, showBars]);
+
+  useEffect(() => {
+    if (!episodeDone || !episode || work?.source !== 'user') return;
+
+    const key = `${workId}:${episode.meta.ep}`;
+    if (submittedEpisodeLogs.current.has(key)) return;
+
+    const log = buildEpisodeReadingLog(episode, clickedCountsRef.current);
+    if (log.word_logs.length === 0) return;
+
+    submittedEpisodeLogs.current.add(key);
+    (async () => {
+      try {
+        await completeLocalEpisode(workId, log);
+      } catch (e) {
+        console.warn('[Reader] Complete local episode:', e);
+      }
+    })();
+  }, [episodeDone, episode, work?.source, workId]);
 
   const saveProgress = useCallback(
     async (msgIdx: number) => {
@@ -403,8 +456,12 @@ export default function ReaderScreen() {
   );
 
   const handleWordTapped = useCallback(
-    (word: string, _definition: string) => {
+    (word: string, _definition: string, mark?: Mark) => {
       wordWasTapped.current = true;
+      if (mark?.item_id) {
+        clickedCountsRef.current[mark.item_id] =
+          (clickedCountsRef.current[mark.item_id] ?? 0) + 1;
+      }
       hideBars();
       showDictPanel(word);
     },

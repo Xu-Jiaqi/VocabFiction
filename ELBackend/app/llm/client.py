@@ -46,7 +46,7 @@ class InstructorClient:
         mode = _coerce_instructor_mode(instructor_mode)
         raw_client = AsyncOpenAI(
             base_url=base_url,
-            api_key=api_key,
+            api_key=api_key or "not-needed",
             timeout=timeout,
         )
         self._client = instructor.from_openai(raw_client, mode=mode)

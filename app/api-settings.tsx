@@ -121,6 +121,8 @@ export default function ApiSettingsScreen() {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
+          <Text style={styles.sectionTitle}>模型接口</Text>
+
           {/* API URL */}
           <Text style={styles.label}>API 地址</Text>
           <TextInput
@@ -195,7 +197,7 @@ export default function ApiSettingsScreen() {
                 styles.testButtonText,
                 !apiKey && styles.testButtonTextDisabled,
               ]}>
-                测试连接
+                测试模型接口
               </Text>
             )}
           </Pressable>
@@ -211,6 +213,7 @@ export default function ApiSettingsScreen() {
               ) : null}
             </View>
           )}
+
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -224,6 +227,12 @@ const styles = StyleSheet.create({
   },
   scroll: { flex: 1 },
   content: { paddingHorizontal: 24, paddingTop: 24, paddingBottom: 80 },
+  sectionTitle: {
+    fontSize: 16,
+    color: Colors.bodyText,
+    fontWeight: '600',
+    marginBottom: 16,
+  },
   label: {
     fontSize: 14,
     color: Colors.bodyText,

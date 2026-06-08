@@ -68,6 +68,17 @@ export async function updateWorkTitle(id: string, title: string): Promise<void> 
   );
 }
 
+export async function updateWorkEpisodeCount(
+  id: string,
+  totalEps: number,
+): Promise<void> {
+  const db = getAppDb();
+  await db.runAsync(
+    "UPDATE works SET total_eps = ?, updated_at = datetime('now') WHERE id = ?",
+    [totalEps, id],
+  );
+}
+
 function mapRow(row: any): Work {
   return {
     id: row.id,

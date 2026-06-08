@@ -216,18 +216,20 @@ App
 - 输入框样式简洁：底部细线，无边框
 - 按钮使用文字 + 箭头，低调不抢眼（"继续阅读"同风格）
 - 上传词表页负责创建 `wordListId`，保存词表内容，并更新“当前词表”
-- 上传小说页读取当前词表，只保存 UTF-8 原文和绑定关系，不生成 episode JSON
+- 上传小说页读取当前词表，保存 UTF-8 原文和绑定关系，并在 App 内批量生成 episode JSON
 - 上传小说必填：小说文本（文件或粘贴）。作品名称可选，不填则从文件名提取
-- 当前实现为本地保存用户作品并返回书架；用户上传作品点击无反应，长按管理
+- 生成成功后用户上传作品可直接进入 reader；未生成完成时点击进入管理页继续生成
 
 **上传后流程：**
 ```
 用户先上传/粘贴词表 → 保存为当前词表（生成 wordListId）
   → 上传/粘贴小说
-  → 点击"保存到书架"
+  → 点击"生成并加入书架"
   → 本地保存 documentDirectory/novels/<workId>/plain.txt 和 meta.json
-  → 写入 works 表，并记录 works.word_list_id
-  → 返回书架
+  → 写入 works 表（total_eps = 0），并记录 works.word_list_id
+  → App 内运行生成 pipeline，持续写 generation-checkpoint.json
+  → 生成 episodes/、chapters.json、arc-plan.json、vocabulary.json
+  → 更新 works.total_eps 并进入 reader
 ```
 
 **异常处理：**
@@ -387,7 +389,8 @@ App
 ### 上传作品状态
 
 ```
-未上传 → 已保存原文（书架可见，点击无反应）
-       → 长按管理 → 更换词表
-                 → 删除小说（移除本地原文和 works 记录）
+未上传 → 已保存原文（书架可见，total_eps = 0）
+       → 生成中/失败（管理页可继续生成）
+       → 已生成分集（点击进入 reader）
+       → 长按管理 → 更换词表 / 删除小说（移除本地目录和 works 记录）
 ```

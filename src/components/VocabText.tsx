@@ -7,7 +7,7 @@ interface VocabTextProps {
   marks: Mark[];
   fontSize?: number;
   textColor?: string;
-  onWordTap?: (word: string, definition: string) => void;
+  onWordTap?: (word: string, definition: string, mark?: Mark) => void;
 }
 
 /**
@@ -55,7 +55,7 @@ export function VocabText({
         return (
           <Text key={`w-${i}`}>
             <Text
-              onPress={() => onWordTap?.(segment, mark.definition)}
+              onPress={() => onWordTap?.(segment, mark.definition, mark)}
             >
               <Text style={mark.is_new ? styles.newWord : styles.reviewWord}>
                 {segment}

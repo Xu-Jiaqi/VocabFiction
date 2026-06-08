@@ -96,14 +96,14 @@
 |------|------|
 | 服务端 | 无。App 完全在用户设备上运行 |
 | 内容生成 | 用户提供自己的 API Key，App 内置 prompt 和生成流程 |
-| 词典数据 | 内置离线词典数据库（如 ECDICT） |
+| 词典数据 | 内置离线 ECDICT 与 WordSenseDB 移动版 SQLite |
 | 内置作品 | 预生成 JSON 打包进 App |
 | API 兼容 | MVP 支持 OpenAI 兼容接口 |
 | 账号系统 | MVP 不做，纯本地存储 |
 | API Key 存储 | 设备本地安全区域（Keychain / EncryptedSharedPreferences） |
 | 阅读体验 | 完全离线，不依赖网络 |
 | 生成时机 | 上传后批量生成（预处理），阅读时直接取 JSON |
-| 客户端平台 | React Native / Expo（iOS + Android） |
+| 客户端平台 | React Native / Expo；当前交付目标为 Android |
 | 本地存储 | expo-sqlite（结构化数据）+ expo-secure-store（API Key） |
 | 词汇追踪模型 | 按 (word, definition) 对追踪，同词异义独立学习 |
 | 分词定位 | marks 数组挂载消息上，word index（0-based 字索引）定位 |

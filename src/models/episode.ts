@@ -7,6 +7,7 @@ export interface Meta {
 }
 
 export interface Mark {
+  item_id?: string | null; // backend vocabulary item id for reading logs
   word: string;       // surface form as it appears in text
   index: number;      // 0-based word position (split by whitespace)
   definition: string; // Chinese definition
@@ -32,6 +33,7 @@ export interface DialogueMessage {
 export type Message = NarrationMessage | DialogueMessage;
 
 export interface VocabItem {
+  item_id?: string | null;
   word: string;
   definition: string;
   is_new: boolean;

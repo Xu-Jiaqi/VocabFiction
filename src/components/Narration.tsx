@@ -7,7 +7,7 @@ interface NarrationProps {
   text: string;
   marks: Mark[];
   fontScale: number;
-  onWordTap?: (word: string, definition: string) => void;
+  onWordTap?: (word: string, definition: string, mark?: Mark) => void;
 }
 
 export function Narration({ text, marks, fontScale, onWordTap }: NarrationProps) {

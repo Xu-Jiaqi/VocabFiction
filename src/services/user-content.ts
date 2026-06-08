@@ -13,6 +13,11 @@ import type { WordList } from '@/src/models/word-list';
 import { BUILTIN_WORD_LIST_ID } from '@/src/models/word-list';
 import { getWordList, insertWordList } from '@/src/db/word-lists';
 import { decodeTextBytes } from './text-file';
+import type {
+  ArcPlan,
+  Chapter,
+  UserVocabulary,
+} from '@/src/services/generation/types';
 
 const ROOT_DIR = `${documentDirectory ?? ''}novels`;
 const WORD_LIST_DIR = `${ROOT_DIR}/word-lists`;
@@ -180,6 +185,64 @@ export async function saveUploadedWorkContent(params: {
   );
 }
 
+export async function saveGeneratedEpisodes(
+  workId: string,
+  episodes: Episode[],
+): Promise<void> {
+  const episodesDir = `${getUserWorkDir(workId)}/episodes`;
+  await makeDirectoryAsync(episodesDir, { intermediates: true });
+
+  await Promise.all(
+    episodes.map((episode, index) => {
+      const epNum = episode.meta.ep || index + 1;
+      return writeAsStringAsync(
+        `${episodesDir}/ep${padEp(epNum)}.json`,
+        JSON.stringify(episode, null, 2),
+      );
+    }),
+  );
+}
+
+export async function saveWorkGenerationData(params: {
+  workId: string;
+  chapters: Chapter[];
+  arcPlan: ArcPlan;
+  userVocabulary: UserVocabulary;
+}): Promise<void> {
+  const workDir = getUserWorkDir(params.workId);
+  await makeDirectoryAsync(workDir, { intermediates: true });
+  await Promise.all([
+    writeAsStringAsync(
+      `${workDir}/chapters.json`,
+      JSON.stringify({ chapters: params.chapters }, null, 2),
+    ),
+    writeAsStringAsync(
+      `${workDir}/arc-plan.json`,
+      JSON.stringify(params.arcPlan, null, 2),
+    ),
+    writeAsStringAsync(
+      `${workDir}/vocabulary.json`,
+      JSON.stringify(params.userVocabulary, null, 2),
+    ),
+  ]);
+}
+
+export async function loadWorkVocabulary(workId: string): Promise<UserVocabulary | null> {
+  return readJsonFile<UserVocabulary>(`${getUserWorkDir(workId)}/vocabulary.json`);
+}
+
+export async function saveWorkVocabulary(
+  workId: string,
+  userVocabulary: UserVocabulary,
+): Promise<void> {
+  const workDir = getUserWorkDir(workId);
+  await makeDirectoryAsync(workDir, { intermediates: true });
+  await writeAsStringAsync(
+    `${workDir}/vocabulary.json`,
+    JSON.stringify(userVocabulary, null, 2),
+  );
+}
+
 export async function deleteUploadedWorkContent(workId: string): Promise<void> {
   await deleteAsync(getUserWorkDir(workId), { idempotent: true });
 }
@@ -195,7 +258,7 @@ export async function saveUploadedWorkContentFromFile(params: {
   title: string;
   fileUri: string;
   wordListId: string;
-}): Promise<void> {
+}): Promise<string> {
   const workDir = getUserWorkDir(params.workId);
   await makeDirectoryAsync(workDir, { intermediates: true });
 
@@ -219,4 +282,6 @@ export async function saveUploadedWorkContentFromFile(params: {
       2,
     ),
   );
+
+  return utf8Content;
 }

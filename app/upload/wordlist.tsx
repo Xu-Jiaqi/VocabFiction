@@ -20,6 +20,7 @@ export default function WordListUploadScreen() {
   const [text, setText] = useState('');
   const [fileName, setFileName] = useState('');
   const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle');
+  const [errorText, setErrorText] = useState('');
 
   const lines = text
     .split('\n')
@@ -43,12 +44,14 @@ export default function WordListUploadScreen() {
     } catch (e) {
       console.warn('[WordListUpload] Pick file:', e);
       setStatus('error');
+      setErrorText('读取文件失败，请确认文件是 .txt 文本');
     }
   };
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
     setStatus('saving');
+    setErrorText('');
     try {
       await saveUploadedWordList({
         name,
@@ -58,6 +61,7 @@ export default function WordListUploadScreen() {
     } catch (e) {
       console.warn('[WordListUpload] Save word list:', e);
       setStatus('error');
+      setErrorText((e as Error)?.message || '保存失败，请检查文件后重试');
     }
   };
 
@@ -129,8 +133,8 @@ export default function WordListUploadScreen() {
           </Text>
         </Pressable>
 
-        {status === 'error' && (
-          <Text style={styles.statusHint}>保存失败，请检查文件后重试</Text>
+        {status === 'error' && errorText.length > 0 && (
+          <Text style={styles.statusHint}>{errorText}</Text>
         )}
       </ScrollView>
     </SafeAreaView>

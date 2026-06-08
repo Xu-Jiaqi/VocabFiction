@@ -1,6 +1,6 @@
 # VocabFiction 数据库表设计
 
-所有数据存储在客户端：业务元数据、词表、进度和设置存入 expo-sqlite；内置作品使用打包的 episode JSON；用户上传小说当前只保存 UTF-8 原文和作品元数据，不生成 episode JSON。
+所有数据存储在客户端：业务元数据、词表、进度和设置存入 expo-sqlite；内置作品使用打包的 episode JSON；用户上传小说保存 UTF-8 原文、生成 checkpoint、episode JSON 和生成中间数据。
 
 ## 表一览
 
@@ -53,8 +53,8 @@ CREATE TABLE works (
 
 **作品与词表绑定：**
 - 内置小说默认绑定 `builtin-nju-ab`，可在作品管理页更换。
-- 用户上传小说保存时绑定当前词表；点击书架卡片不进入阅读，长按卡片进入管理页。
-- 用户上传小说当前只保存原文，`total_eps = 0`，不生成 episode JSON。
+- 用户上传小说保存时绑定当前词表，并先以 `total_eps = 0` 登记到书架。
+- 生成成功后写入 episode JSON 并更新 `total_eps`；生成未完成时点击书架卡片进入作品管理页继续生成。
 
 ## reading_progress
 
@@ -257,7 +257,7 @@ novels/败犬女主太多了！/
 
 **内置作品：** JSON 文件随 App 打包为静态 assets。通过 `require()` 或 `expo-asset` 加载。
 
-**用户上传作品：** 当前只保存原文，不生成 episode JSON。目录为 `documentDirectory/novels/<work_id>/plain.txt`，另有 `meta.json` 记录标题、绑定词表和保存时间。用户上传作品出现在书架，但点击卡片不进入 reader；长按进入管理页。
+**用户上传作品：** 目录为 `documentDirectory/novels/<work_id>/`。`plain.txt` 保存 UTF-8 原文，`meta.json` 记录标题、绑定词表和保存时间，`generation-checkpoint.json` 保存生成阶段、中间数据和已完成 episode。生成成功后写入 `episodes/epNN.json`、`chapters.json`、`arc-plan.json`、`vocabulary.json`。
 
 **Episode 发现：** 加载某集时，按文件名模式 `ep<NN>_*.json` 匹配。`works.total_eps` 提供集数上限。
 
@@ -273,8 +273,9 @@ App 启动
   → 插入默认设置、内置词表和内置作品（INSERT OR IGNORE）
   → 加载 works 表 → 渲染书架
   → 用户点击内置作品 → 从 novels/<作品名>/<work_id>/ 加载当前集 JSON
-  → 用户点击上传作品 → 无反应；长按进入作品管理
-  → 作品管理：修改 works.title；更换 works.word_list_id；用户作品可删除本地目录和 works 记录
+  → 用户点击已生成的上传作品 → 从 documentDirectory/novels/<work_id>/episodes 加载当前集 JSON
+  → 用户点击未生成完成的上传作品 → 进入作品管理继续生成
+  → 作品管理：修改 works.title；更换 works.word_list_id；继续生成；用户作品可删除本地目录和 works 记录
   → 根据 reading_progress 跳转到对应位置
   → 阅读中：每点击一条消息 → 更新 reading_progress.current_msg
   → 读完一集：current_ep += 1, current_msg = 0, total_read_eps += 1

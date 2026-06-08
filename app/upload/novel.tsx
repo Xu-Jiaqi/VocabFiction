@@ -13,23 +13,34 @@ import { File } from 'expo-file-system';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Colors } from '@/src/theme/colors';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { insertWork } from '@/src/db/works';
+import { insertWork, updateWorkEpisodeCount } from '@/src/db/works';
 import { getAllWordLists } from '@/src/db/word-lists';
 import type { WordList } from '@/src/models/word-list';
+import { generateEpisodesInApp } from '@/src/services/generation/pipeline';
 import {
   loadLatestWordList,
   makeUserWorkId,
+  saveGeneratedEpisodes,
+  saveWorkGenerationData,
   saveUploadedWorkContentFromFile,
   type UploadedWordList,
 } from '@/src/services/user-content';
+
+type UploadStatus =
+  | 'idle'
+  | 'saving'
+  | 'generating'
+  | 'persisting'
+  | 'error';
 
 export default function NovelUploadScreen() {
   const router = useRouter();
   const [title, setTitle] = useState('');
   const [fileName, setFileName] = useState('');
   const [wordList, setWordList] = useState<UploadedWordList | null>(null);
-  const [status, setStatus] = useState<'idle' | 'saving' | 'error'>('idle');
+  const [status, setStatus] = useState<UploadStatus>('idle');
   const [errorText, setErrorText] = useState('');
+  const [progressText, setProgressText] = useState('');
   const [fileSize, setFileSize] = useState(0);
   const [allWordLists, setAllWordLists] = useState<WordList[]>([]);
   const [showWordListPicker, setShowWordListPicker] = useState(false);
@@ -37,7 +48,10 @@ export default function NovelUploadScreen() {
   // Store picked file URI (native file, never decoded into a JS string).
   const fileUriRef = useRef('');
 
-  const canSubmit = fileSize > 0 && status !== 'saving';
+  const isBusy = status === 'saving'
+    || status === 'generating'
+    || status === 'persisting';
+  const canSubmit = fileSize > 0 && !isBusy;
 
   const refreshWordList = useCallback(async () => {
     try {
@@ -81,25 +95,29 @@ export default function NovelUploadScreen() {
     if (!canSubmit) return;
     setStatus('saving');
     setErrorText('');
+    setProgressText('正在保存原文...');
+    let newWorkId = '';
 
     try {
       const currentWordList = wordList ?? await loadLatestWordList();
       if (!currentWordList) {
         setStatus('error');
+        setProgressText('');
         setErrorText('请先上传词表，再上传小说');
         return;
       }
 
       const fileTitle = fileName.endsWith('.txt') ? fileName.slice(0, -4) : fileName;
       const workTitle = title.trim() || fileTitle || 'Untitled Work';
-      const newWorkId = makeUserWorkId(workTitle);
+      newWorkId = makeUserWorkId(workTitle);
 
-      await saveUploadedWorkContentFromFile({
+      const novelText = await saveUploadedWorkContentFromFile({
         workId: newWorkId,
         title: workTitle,
         fileUri: fileUriRef.current,
         wordListId: currentWordList.id,
       });
+
       await insertWork({
         id: newWorkId,
         title: workTitle,
@@ -110,11 +128,41 @@ export default function NovelUploadScreen() {
         word_list_id: currentWordList.id,
       });
 
-      router.back();
+      setStatus('generating');
+      setProgressText('正在进入 App 内生成流程...');
+      const generated = await generateEpisodesInApp({
+        workId: newWorkId,
+        title: workTitle,
+        novelText,
+        wordListText: currentWordList.text,
+        onStatus: (generationStatus) => {
+          setProgressText(generationStatus.message);
+        },
+      });
+
+      setStatus('persisting');
+      setProgressText('正在保存生成结果...');
+      await saveGeneratedEpisodes(newWorkId, generated.episodes);
+      await saveWorkGenerationData({
+        workId: newWorkId,
+        chapters: generated.chapters,
+        arcPlan: generated.arcPlan,
+        userVocabulary: generated.userVocabulary,
+      });
+
+      await updateWorkEpisodeCount(newWorkId, generated.episodes.length);
+
+      router.replace(`/reader/${newWorkId}`);
     } catch (e) {
       console.warn('[NovelUpload] Save uploaded work:', e);
       setStatus('error');
-      setErrorText('保存失败，请稍后重试');
+      setProgressText('');
+      const reason = (e as Error)?.message || '保存失败，请稍后重试';
+      setErrorText(
+        newWorkId
+          ? `${reason}。本地原文和生成进度已保留在书架，可进入作品管理页继续生成。`
+          : reason,
+      );
     }
   };
 
@@ -148,7 +196,7 @@ export default function NovelUploadScreen() {
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.hint}>
-          支持 .txt 文件，保存后仅保留原文并绑定当前词表
+          支持 .txt 文件，上传后会在 App 内生成分集内容并保存到书架
         </Text>
 
         <View style={styles.wordListBox}>
@@ -214,9 +262,19 @@ export default function NovelUploadScreen() {
               !canSubmit && styles.submitTextDisabled,
             ]}
           >
-            {status === 'saving' ? '保存中...' : '保存到书架 →'}
+            {status === 'saving'
+              ? '保存中...'
+              : status === 'generating'
+                ? '生成中...'
+                : status === 'persisting'
+                  ? '保存中...'
+                  : '生成并加入书架 →'}
           </Text>
         </Pressable>
+
+        {progressText.length > 0 && status !== 'error' && (
+          <Text style={styles.statusHint}>{progressText}</Text>
+        )}
 
         {status === 'error' && errorText.length > 0 && (
           <Text style={styles.statusHint}>{errorText}</Text>

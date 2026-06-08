@@ -69,6 +69,20 @@ class TestInit:
                 _, kwargs = mock_async_openai.call_args
                 assert kwargs["timeout"] == 120.0
 
+    def test_init_uses_placeholder_for_empty_api_key(self) -> None:
+        """Empty API key should still construct local OpenAI-compatible clients."""
+        with mock.patch("app.llm.client.instructor.from_openai"):
+            with mock.patch("app.llm.client.AsyncOpenAI") as mock_async_openai:
+                __import__(
+                    "app.llm.client", fromlist=["InstructorClient"]
+                ).InstructorClient(
+                    base_url="http://localhost:11434/v1",
+                    api_key="",
+                    model="deepseek-v4-flash",
+                )
+                _, kwargs = mock_async_openai.call_args
+                assert kwargs["api_key"] == "not-needed"
+
     def test_model_property_returns_configured_name(self) -> None:
         """model property returns the model name passed to __init__."""
         with mock.patch("app.llm.client.instructor.from_openai"):

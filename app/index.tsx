@@ -51,12 +51,14 @@ export default function BookshelfScreen() {
   const renderWorkCard = ({ item }: { item: WorkWithMeta }) => {
     const { work, wordListName } = item;
     const isUserWork = work.source === 'user';
+    const canRead = !isUserWork || work.total_eps > 0;
 
     return (
       <TouchableOpacity
         style={styles.card}
         onPress={() => {
-          if (!isUserWork) router.push(`/reader/${work.id}`);
+          if (canRead) router.push(`/reader/${work.id}`);
+          else router.push(`/work/${work.id}/manage`);
         }}
         onLongPress={() => router.push(`/work/${work.id}/manage`)}
       >
@@ -65,8 +67,13 @@ export default function BookshelfScreen() {
           {wordListName ? (
             <Text style={styles.wordListName}>{wordListName}</Text>
           ) : null}
+          {isUserWork ? (
+            <Text style={styles.wordListName}>
+              {work.total_eps > 0 ? `${work.total_eps} 集` : '未生成分集'}
+            </Text>
+          ) : null}
         </View>
-        {!isUserWork && <Text style={styles.arrow}>›</Text>}
+        {canRead && <Text style={styles.arrow}>›</Text>}
       </TouchableOpacity>
     );
   };

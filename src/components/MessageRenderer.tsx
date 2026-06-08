@@ -1,7 +1,7 @@
 import { memo } from 'react';
 import { Narration } from './Narration';
 import { ChatBubble } from './ChatBubble';
-import type { Message } from '@/src/models/episode';
+import type { Mark, Message } from '@/src/models/episode';
 
 interface MessageRendererProps {
   message: Message;
@@ -11,7 +11,7 @@ interface MessageRendererProps {
    * 是否为新角色发言。Narration 忽略；ChatBubble 在切换时增加顶部间距。
    */
   isNewSpeaker?: boolean;
-  onWordTap?: (word: string, definition: string) => void;
+  onWordTap?: (word: string, definition: string, mark?: Mark) => void;
   onAvatarPress?: (characterName: string) => void;
   avatarVersion?: number;
 }

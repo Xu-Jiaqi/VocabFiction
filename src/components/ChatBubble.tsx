@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import { Colors } from '@/src/theme/colors';
 import { ChatAvatar } from './ChatAvatar';
 import { VocabText } from './VocabText';
-import type { DialogueMessage } from '@/src/models/episode';
+import type { DialogueMessage, Mark } from '@/src/models/episode';
 
 interface ChatBubbleProps {
   message: DialogueMessage;
@@ -13,7 +13,7 @@ interface ChatBubbleProps {
    * 父级（reader）通过比较相邻消息的 name/side 计算后传入。
    */
   isNewSpeaker?: boolean;
-  onWordTap?: (word: string, definition: string) => void;
+  onWordTap?: (word: string, definition: string, mark?: Mark) => void;
   onAvatarPress?: (characterName: string) => void;
   avatarVersion?: number;
 }

@@ -3,10 +3,12 @@ import { openDatabaseAsync, type SQLiteDatabase } from 'expo-sqlite';
 import { BUILTIN_WORD_LIST_ID } from '@/src/models/word-list';
 
 const ECDICT_DB = 'ecdict_mobile.db';
+const WORD_SENSE_DB = 'word_sense_mobile.db';
 const APP_DB = 'vocabfiction.db';
 const BUILTIN_WORD_LIST_NAME = 'NJU词汇表AB类汇总';
 
 let ecdictDb: SQLiteDatabase | null = null;
+let wordSenseDb: SQLiteDatabase | null = null;
 let appDb: SQLiteDatabase | null = null;
 
 async function ensureEcdict(): Promise<boolean> {
@@ -70,6 +72,52 @@ async function ensureEcdict(): Promise<boolean> {
   }
 }
 
+async function ensureWordSenseDb(): Promise<boolean> {
+  const destFile = new File(Paths.document, WORD_SENSE_DB);
+
+  if (destFile.exists && destFile.size && destFile.size > 50_000_000) {
+    console.log('[WordSenseDB] Already exists:', destFile.size);
+    return true;
+  }
+
+  if (destFile.exists) {
+    console.log('[WordSenseDB] Removing stale:', destFile.size);
+    destFile.delete();
+  }
+
+  try {
+    const { Asset } = require('expo-asset');
+    const mod = require('../../assets/word_sense_mobile.db');
+    const asset = Asset.fromModule(mod);
+    await asset.downloadAsync();
+    if (!asset.localUri) {
+      console.error('[WordSenseDB] No localUri');
+      return false;
+    }
+
+    const src = new File(asset.localUri);
+    if (!src.exists || src.size === 0) {
+      console.error('[WordSenseDB] Source empty or missing');
+      return false;
+    }
+
+    const data = src.bytesSync();
+    const header = String.fromCharCode(...Array.from(data.slice(0, 16)));
+    if (!header.startsWith('SQLite format 3')) {
+      console.error('[WordSenseDB] Not a valid SQLite file! Header:', header);
+      return false;
+    }
+
+    destFile.create();
+    destFile.write(data);
+    console.log('[WordSenseDB] Written, dest size:', destFile.size);
+    return destFile.exists && destFile.size > 50_000_000;
+  } catch (e) {
+    console.error('[WordSenseDB] ensure error:', (e as Error)?.message ?? String(e));
+    return false;
+  }
+}
+
 async function ensureColumn(
   db: SQLiteDatabase,
   table: string,
@@ -84,9 +132,13 @@ async function ensureColumn(
 
 export async function initDatabase(): Promise<{
   ecdict: SQLiteDatabase | null;
+  wordSense: SQLiteDatabase | null;
   app: SQLiteDatabase;
 }> {
-  const ready = await ensureEcdict();
+  const [ready, wordSenseReady] = await Promise.all([
+    ensureEcdict(),
+    ensureWordSenseDb(),
+  ]);
 
   if (ready) {
     try {
@@ -103,6 +155,19 @@ export async function initDatabase(): Promise<{
     } catch (e) {
       console.error('[DB] Open/query:', (e as Error)?.message ?? String(e));
       ecdictDb = null;
+    }
+  }
+
+  if (wordSenseReady) {
+    try {
+      wordSenseDb = await openDatabaseAsync(WORD_SENSE_DB, undefined, Paths.document.uri);
+      const test = await wordSenseDb.getFirstAsync<{ cnt: number }>(
+        'SELECT COUNT(*) as cnt FROM word_senses',
+      );
+      console.log(`[WordSenseDB] Senses: ${test?.cnt ?? 0}`);
+    } catch (e) {
+      console.error('[WordSenseDB] Open/query:', (e as Error)?.message ?? String(e));
+      wordSenseDb = null;
     }
   }
 
@@ -175,7 +240,7 @@ export async function initDatabase(): Promise<{
   `);
 
   console.log('[DB] App ready');
-  return { ecdict: ecdictDb, app: appDb! };
+  return { ecdict: ecdictDb, wordSense: wordSenseDb, app: appDb! };
 }
 
 export function getEcdictDb(): SQLiteDatabase {
@@ -186,4 +251,9 @@ export function getEcdictDb(): SQLiteDatabase {
 export function getAppDb(): SQLiteDatabase {
   if (!appDb) throw new Error('App DB not initialized');
   return appDb;
+}
+
+export function getWordSenseDb(): SQLiteDatabase {
+  if (!wordSenseDb) throw new Error('WordSenseDB not available');
+  return wordSenseDb;
 }
