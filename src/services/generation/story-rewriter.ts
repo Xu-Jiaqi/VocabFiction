@@ -1,21 +1,25 @@
 import type { DialogueMessage, Message, NarrationMessage } from '@/src/models/episode';
+import { generationLog, textStats } from './debug-log';
 import { chatJson, type ChatMessage } from './model-client';
 import type { EpisodeSlot, RewriteResult, TargetWord, UsedTargetWord } from './types';
 
-const SYSTEM_PROMPT = `You are an English light-novel writer. Your task is to rewrite a story segment into a vivid, engaging English light-novel format - a mix of narration and dialogue that reads naturally, like a novel excerpt.
+const SYSTEM_PROMPT = `You are an English light-novel writer. The user will provide novel text in any language. You MUST rewrite it into natural English light-novel prose.
 
 WRITING GUIDELINES:
-1. Narration - Use first-person narration ("I") in past tense. Describe actions, inner thoughts, and surroundings. Keep it natural and flowing.
-2. Dialogue - Conversations should feel real. Each dialogue message must specify:
+1. Language - Detect the input language automatically and rewrite the content ENTIRELY in English. Translate character names, place names, organizations, skills, item names, titles, and special terms into natural English equivalents whenever possible. If the source is already English, polish it rather than copying it verbatim.
+2. Narration - Use first-person narration ("I") in past tense. Describe actions, inner thoughts, and surroundings. Keep it natural and immersive.
+3. Dialogue - Conversations should feel realistic. Each dialogue message must specify:
    - "side": "right" for the protagonist (main character, the "I" narrator)
    - "side": "left" for all other characters
-   - "name": the speaker's name
-3. Target words - You will be given target vocabulary words (with Chinese meanings). Incorporate as many of them as NATURALLY as possible. Do NOT force them. For each word you use, report both its item_id and exact surface form in target_words_used.
-4. Surface forms welcome - You may use natural inflected forms (e.g. "consuming", "went", "ran").
-5. Style - Keep the English accessible, vivid, and young-adult/light-novel like.
-6. Length - Produce a complete scene with multiple message exchanges. Aim for 6-12 messages.
+   - "name": the speaker's name in English
+4. Target words - Incorporate as many target vocabulary words as NATURALLY as possible. Never force a word. For every used target word, report its item_id and exact surface form in target_words_used.
+5. Surface forms welcome - You may use natural inflected forms (e.g. "consume" -> "consumed", "run" -> "ran").
+6. Style - Use accessible English suitable for young-adult/light-novel readers. Show emotions through actions, expressions, and dialogue rather than abstract exposition.
+7. Message granularity - Every message must contain only 1-2 sentences. Split long narration or speech into multiple consecutive messages.
+8. Batch mode - Multiple episodes may be provided in one request. Treat each episode as a separate scene and maintain continuity between consecutive episodes when appropriate.
 
-Output ONLY valid JSON:
+Preserve the original plot, events, and character relationships unless adaptation is required for natural English narration.
+Output ONLY valid JSON. For a single episode:
 {"messages":[{"type":"narration","text":"..."},{"type":"dialogue","side":"left","name":"...","text":"..."}],"target_words_used":[{"item_id":"...","surface":"..."}]}`;
 
 type RewriteResponse = {
@@ -26,6 +30,16 @@ type RewriteResponse = {
     text?: unknown;
   }>;
   target_words_used?: Array<{ item_id?: unknown; surface?: unknown }>;
+};
+
+type BatchEpisodeResponse = {
+  episode_index?: unknown;
+  messages?: RewriteResponse['messages'];
+  target_words_used?: RewriteResponse['target_words_used'];
+};
+
+type BatchRewriteResponse = {
+  episodes?: BatchEpisodeResponse[];
 };
 
 function buildUserPrompt(
@@ -58,6 +72,7 @@ function buildUserPrompt(
   }
 
   lines.push('## Source Text to Rewrite');
+  lines.push('The following is novel text. Rewrite it in English:');
   lines.push(sourceText);
   lines.push('');
 
@@ -75,6 +90,62 @@ function buildUserPrompt(
 
   lines.push(
     'Output a JSON object with "messages" and "target_words_used". Do not include markdown.',
+  );
+  return lines.join('\n');
+}
+
+function buildBatchUserPrompt(episodeSlots: EpisodeSlot[], chapterTexts: string[]): string {
+  const lines: string[] = [
+    'You are given multiple episodes to rewrite in a single response.',
+    `There are ${episodeSlots.length} episodes below. Generate ALL of them.`,
+    'Maintain story continuity across consecutive episodes.',
+    '',
+  ];
+
+  for (let i = 0; i < episodeSlots.length; i++) {
+    const slot = episodeSlots[i];
+    const sourceText = slot.source_text || chapterTexts[i] || '';
+    lines.push(`--- Episode ${i + 1} of ${episodeSlots.length} ---`);
+
+    if (slot.episode_type === 'side') {
+      lines.push('## Episode Type: Side Episode (Bonus Story)');
+      lines.push('Focus on naturally integrating target words while keeping this episode readable as a standalone scene.');
+      lines.push('');
+    }
+
+    if (slot.previous_context.length > 0) {
+      lines.push('## Previous Episode Context');
+      lines.push('Use this for continuity: characters, setting, and recent events.');
+      for (let j = 0; j < slot.previous_context.length; j++) {
+        const msg = slot.previous_context[j];
+        let role = typeof msg.type === 'string' ? msg.type : 'unknown';
+        if (typeof msg.side === 'string') {
+          role += ` (${msg.side} - ${typeof msg.name === 'string' ? msg.name : '?'})`;
+        }
+        const text = typeof msg.text === 'string' ? msg.text : '';
+        lines.push(`  [${j + 1}] [${role}] ${text.length > 200 ? `${text.slice(0, 200)}...` : text}`);
+      }
+      lines.push('');
+    }
+
+    lines.push('## Source Text to Rewrite');
+    lines.push('The following is novel text. Rewrite it in English:');
+    lines.push(sourceText);
+    lines.push('');
+
+    if (slot.target_words.length > 0) {
+      lines.push('## Target Vocabulary Words');
+      lines.push('Integrate as many of the following words naturally into the story. For each word you use, report its item_id and exact surface form in target_words_used.');
+      for (const word of slot.target_words) {
+        const label = word.is_new ? 'NEW' : 'REVIEW';
+        lines.push(`  - item_id: ${word.item_id}, word: ${word.word} (${word.meaning}) [${label}]`);
+      }
+      lines.push('');
+    }
+  }
+
+  lines.push(
+    'Output a JSON object with "episodes", a list of episode objects. Each episode object must have "episode_index" as the 0-based input index, "messages", and "target_words_used". Do not include markdown.',
   );
   return lines.join('\n');
 }
@@ -159,15 +230,118 @@ export async function rewriteEpisode(
     throw new Error('chapter_text must not be empty for main episodes');
   }
 
+  const messages = buildMessages(episodeSlot, chapterText);
+  generationLog.debug('rewrite.single.start', {
+    episodeId: episodeSlot.episode_id,
+    episodeType: episodeSlot.episode_type,
+    sourceText: textStats(episodeSlot.source_text || chapterText),
+    targetWords: episodeSlot.target_words.length,
+    previousContext: episodeSlot.previous_context.length,
+    promptChars: messages.reduce((sum, message) => sum + message.content.length, 0),
+  });
+
   const response = await chatJson<RewriteResponse>(
-    buildMessages(episodeSlot, chapterText),
-    { maxTokens: 4096, timeoutMs: 180_000 },
+    messages,
+    { timeoutMs: 900_000, maxTokens: 100_000 },
   );
 
-  const messages = parseMessages(response.messages);
+  const parsedMessages = parseMessages(response.messages);
+  const targetWordsUsed = normalizeUsedWords(response.target_words_used, episodeSlot.target_words);
+  generationLog.debug('rewrite.single.done', {
+    episodeId: episodeSlot.episode_id,
+    messages: parsedMessages.length,
+    targetWordsUsed: targetWordsUsed.length,
+    outputChars: parsedMessages.reduce((sum, message) => sum + message.text.length, 0),
+  });
 
   return {
-    messages,
-    target_words_used: normalizeUsedWords(response.target_words_used, episodeSlot.target_words),
+    messages: parsedMessages,
+    target_words_used: targetWordsUsed,
   };
+}
+
+export async function rewriteBatch(
+  episodeSlots: EpisodeSlot[],
+  chapterTexts: string[],
+): Promise<RewriteResult[]> {
+  if (episodeSlots.length !== chapterTexts.length) {
+    throw new Error(`episodeSlots (${episodeSlots.length}) and chapterTexts (${chapterTexts.length}) must have the same length`);
+  }
+
+  for (let i = 0; i < episodeSlots.length; i++) {
+    const sourceText = episodeSlots[i].source_text || chapterTexts[i] || '';
+    if (episodeSlots[i].episode_type !== 'side' && !sourceText.trim()) {
+      throw new Error(`chapter_text must not be empty for main episode at index ${i}`);
+    }
+  }
+
+  const prompt = buildBatchUserPrompt(episodeSlots, chapterTexts);
+  generationLog.debug('rewrite.batch.start', {
+    episodes: episodeSlots.length,
+    prompt: textStats(prompt),
+    slots: episodeSlots.map((slot, index) => ({
+      index,
+      episodeId: slot.episode_id,
+      episodeType: slot.episode_type,
+      sourceTextChars: (slot.source_text || chapterTexts[index] || '').length,
+      targetWords: slot.target_words.length,
+      previousContext: slot.previous_context.length,
+    })),
+  });
+
+  const response = await chatJson<BatchRewriteResponse>(
+    [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: prompt },
+    ],
+    { timeoutMs: 900_000, maxTokens: 100_000 },
+  );
+
+  if (!Array.isArray(response.episodes)) {
+    generationLog.error('rewrite.batch.invalid_response', { response });
+    throw new Error('episodes must be an array');
+  }
+
+  const byIndex = new Map<number, BatchEpisodeResponse>();
+  for (const episode of response.episodes) {
+    if (typeof episode.episode_index === 'number') {
+      byIndex.set(Math.floor(episode.episode_index), episode);
+    }
+  }
+
+  const missingIndexes: number[] = [];
+  const results = episodeSlots.map((slot, index) => {
+    const episode = byIndex.get(index);
+    if (!episode) {
+      missingIndexes.push(index);
+      return { messages: [], target_words_used: [] };
+    }
+
+    return {
+      messages: parseMessages(episode.messages),
+      target_words_used: normalizeUsedWords(episode.target_words_used, slot.target_words),
+    };
+  });
+
+  if (missingIndexes.length > 0) {
+    generationLog.warn('rewrite.batch.missing_episodes', {
+      expected: episodeSlots.length,
+      received: response.episodes.length,
+      missingIndexes,
+      receivedIndexes: response.episodes.map((episode) => episode.episode_index),
+    });
+  }
+
+  generationLog.debug('rewrite.batch.done', {
+    expected: episodeSlots.length,
+    received: response.episodes.length,
+    results: results.map((result, index) => ({
+      index,
+      messages: result.messages.length,
+      targetWordsUsed: result.target_words_used.length,
+      outputChars: result.messages.reduce((sum, message) => sum + message.text.length, 0),
+    })),
+  });
+
+  return results;
 }

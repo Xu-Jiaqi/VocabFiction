@@ -1,29 +1,23 @@
 import { chatJson } from './model-client';
+import { generationLog, textStats } from './debug-log';
+import { splitChaptersRegex } from './chapter-splitter';
 import type { Chapter } from './types';
 
 const MIN_CHAPTER_BODY_LENGTH = 100;
-const MAX_SPLIT_CHARS = 30_000;
-const MAX_METADATA_CHARS = 8_000;
+const MAX_SPLIT_LINES = 1_000;
 
-const CHAPTER_HEADING_PATTERNS: RegExp[] = [
-  /^Chapter\s+\d+/gim,
-  /^CHAPTER\s+\w+/gm,
-  /^\d+\.\s+\S/gm,
-  /^第[一二三四五六七八九十百千\d]+\s*章/gm,
-];
+const CHAPTER_SPLIT_SYSTEM_PROMPT = `You are a novel manuscript analyst. Your task is to identify chapter boundaries in a raw text.
 
-const CHAPTER_SPLIT_SYSTEM_PROMPT = `You are a novel manuscript analyst. Your task is to split a raw text into chapters.
-
-The text may contain chapter headings like "Chapter 1", "CHAPTER ONE", "1. A New Beginning", etc.
+The text may contain chapter headings like "Chapter 1", "CHAPTER ONE", "1. A New Beginning", "第一章", etc.
 If no clear headings exist, identify natural chapter breaks based on scene changes, time jumps,
 or major narrative shifts.
 
 For each chapter you identify, provide:
-- title: A short, descriptive title (3-10 words) that captures the chapter's essence
-- text: The full chapter body text, starting from the chapter beginning (including any heading found)
+- title: The chapter heading exactly as it appears in the text, or a short descriptive title if no heading exists
+- start_line: The 0-based line number of the first line of the chapter, including its heading
 
-Do NOT summarize or rewrite the text. Keep the original wording exactly as provided.
-Output JSON only: {"chapters":[{"title":"...","text":"..."}]}.`;
+Do NOT include the chapter body text in your response. Only return the title and start_line.
+Output JSON only: {"chapters":[{"title":"...","start_line":0}]}.`;
 
 const METADATA_SYSTEM_PROMPT = `You are a literary analyst specializing in novel analysis. Your task is to extract structured metadata from a chapter of a novel.
 
@@ -38,7 +32,7 @@ Be specific and accurate. Only list characters that are explicitly named in the 
 Output JSON only.`;
 
 type ChapterSplitResponse = {
-  chapters?: Array<{ title?: unknown; text?: unknown }>;
+  chapters?: Array<{ title?: unknown; start_line?: unknown }>;
 };
 
 type ChapterMetadataResponse = {
@@ -49,66 +43,73 @@ type ChapterMetadataResponse = {
   estimated_reading_time?: unknown;
 };
 
-function splitByPattern(text: string, pattern: RegExp): Array<[string, string]> | null {
-  pattern.lastIndex = 0;
-  const matches = Array.from(text.matchAll(pattern));
-  if (matches.length < 2) return null;
-
-  const chapters: Array<[string, string]> = [];
-  for (let i = 0; i < matches.length; i++) {
-    const match = matches[i];
-    const start = match.index ?? 0;
-    const end = i + 1 < matches.length ? matches[i + 1].index ?? text.length : text.length;
-    const segment = text.slice(start, end);
-    const headingEnd = segment.indexOf('\n');
-    const heading = headingEnd === -1 ? segment.trim() : segment.slice(0, headingEnd).trim();
-    const body = headingEnd === -1 ? '' : segment.slice(headingEnd).trim();
-
-    if (body.length >= MIN_CHAPTER_BODY_LENGTH) {
-      chapters.push([heading, body]);
-    }
-  }
-
-  return chapters.length >= 2 ? chapters : null;
-}
-
-export function splitChaptersRegex(rawText: string): Array<[string, string]> | null {
-  for (const pattern of CHAPTER_HEADING_PATTERNS) {
-    const chapters = splitByPattern(rawText, pattern);
-    if (chapters) return chapters;
-  }
-  return null;
-}
-
 async function splitChaptersByModel(rawText: string): Promise<Array<[string, string]>> {
-  const truncated = rawText.length > MAX_SPLIT_CHARS
-    ? `${rawText.slice(0, MAX_SPLIT_CHARS)}\n\n[Note: text was truncated to 30,000 characters for analysis.]`
-    : rawText;
+  const lines = rawText.split('\n');
+  const limitedLines = lines.slice(0, MAX_SPLIT_LINES);
+  const limitedText = lines.length > MAX_SPLIT_LINES
+    ? `${limitedLines.join('\n')}\n\n[Note: text was truncated at line 1000 for analysis.]`
+    : limitedLines.join('\n');
 
+  generationLog.debug('chapters.split.model.start', {
+    rawText: textStats(rawText),
+    limitedText: textStats(limitedText),
+    maxSplitLines: MAX_SPLIT_LINES,
+  });
   const result = await chatJson<ChapterSplitResponse>(
     [
       { role: 'system', content: CHAPTER_SPLIT_SYSTEM_PROMPT },
-      { role: 'user', content: `Split the following novel text into chapters:\n\n${truncated}` },
+      {
+        role: 'user',
+        content: [
+          'Identify chapter boundaries in the following text.',
+          'The first line below is line 0, the next is line 1, etc.',
+          '',
+          limitedText,
+        ].join('\n'),
+      },
     ],
-    { maxTokens: 8192, timeoutMs: 180_000 },
+    { timeoutMs: 180_000, maxTokens: 100_000 },
   );
 
   if (!Array.isArray(result.chapters)) {
+    generationLog.error('chapters.split.model.invalid', { result });
     throw new Error('chapters must be an array');
   }
+  generationLog.debug('chapters.split.model.response', {
+    boundaries: result.chapters.length,
+    sample: result.chapters.slice(0, 10),
+  });
 
-  const chapters = result.chapters
-    .map((chapter, index): [string, string] => {
+  const boundaries = result.chapters
+    .map((chapter, index) => {
       const title = typeof chapter.title === 'string' ? chapter.title.trim() : '';
-      const text = typeof chapter.text === 'string' ? chapter.text.trim() : '';
+      const startLine = typeof chapter.start_line === 'number'
+        ? Math.floor(chapter.start_line)
+        : Number.NaN;
       if (!title) throw new Error(`chapter ${index + 1} title is empty`);
-      if (text.length < MIN_CHAPTER_BODY_LENGTH) {
-        throw new Error(`chapter ${index + 1} text is too short`);
+      if (!Number.isFinite(startLine) || startLine < 0) {
+        throw new Error(`chapter ${index + 1} start_line is invalid`);
       }
-      return [title, text];
-    });
+      return { title, startLine };
+    })
+    .sort((a, b) => a.startLine - b.startLine);
+
+  const chapters: Array<[string, string]> = [];
+  for (let i = 0; i < boundaries.length; i++) {
+    const start = Math.max(0, Math.min(boundaries[i].startLine, lines.length));
+    const nextStart = i + 1 < boundaries.length ? boundaries[i + 1].startLine : lines.length;
+    const end = Math.max(start + 1, Math.min(nextStart, lines.length));
+    const text = lines.slice(start, end).join('\n').trim();
+    if (text.length >= MIN_CHAPTER_BODY_LENGTH) {
+      chapters.push([boundaries[i].title, text]);
+    }
+  }
 
   if (!chapters.length) {
+    generationLog.error('chapters.split.model.empty', {
+      boundaries,
+      rawText: textStats(rawText),
+    });
     throw new Error('模型没有返回有效章节');
   }
 
@@ -167,57 +168,73 @@ function validateMetadata(
   };
 }
 
-async function extractMetadata(
+export async function extractChapterMetadata(
   text: string,
   chapterIndex: number,
 ): Promise<Omit<Chapter, 'chapter_id' | 'raw_text'>> {
   try {
+    generationLog.debug('chapters.metadata.start', {
+      chapterIndex,
+      input: textStats(text),
+      rawTextChars: text.length,
+    });
     const result = await chatJson<ChapterMetadataResponse>(
       [
         { role: 'system', content: METADATA_SYSTEM_PROMPT },
         {
           role: 'user',
-          content: `Extract metadata for the following chapter:\n\n${text.slice(0, MAX_METADATA_CHARS)}`,
+          content: `Extract metadata for the following chapter:\n\n${text}`,
         },
       ],
-      { maxTokens: 1024, timeoutMs: 90_000 },
+      { timeoutMs: 900_000, maxTokens: 100_000 },
+      // 改为 900s，等待 DeepSeek v4-pro 推理模型完成 reasoning 阶段
     );
 
-    return validateMetadata(result, chapterIndex);
+    const metadata = validateMetadata(result, chapterIndex);
+    generationLog.debug('chapters.metadata.done', {
+      chapterIndex,
+      metadata,
+    });
+    return metadata;
   } catch (e) {
-    console.warn('[LocalGeneration] Metadata fallback:', e);
+    generationLog.warn('chapters.metadata.fallback', {
+      chapterIndex,
+      error: (e as Error).message,
+      text: textStats(text),
+    });
     return fallbackMetadata(chapterIndex, text);
   }
 }
 
-export async function preprocessNovel(title: string, rawText: string): Promise<Chapter[]> {
+export async function splitNovelChapters(
+  title: string,
+  rawText: string,
+): Promise<Array<[string, string]>> {
   const stripped = rawText.trim();
   if (!stripped) throw new Error('小说内容为空');
 
   let segments = splitChaptersRegex(stripped);
+  if (segments) {
+    generationLog.debug('chapters.split.regex.done', {
+      segments: segments.length,
+      sample: segments.slice(0, 5).map(([segmentTitle, segmentText]) => ({
+        title: segmentTitle,
+        chars: segmentText.length,
+      })),
+    });
+  }
   if (!segments) {
     try {
       segments = await splitChaptersByModel(stripped);
     } catch (e) {
-      console.warn('[LocalGeneration] Chapter split fallback:', e);
+      generationLog.warn('chapters.split.fallback', {
+        title,
+        error: (e as Error).message,
+        rawText: textStats(stripped),
+      });
       segments = [[title || 'Chapter 1', stripped]];
     }
   }
 
-  const chapters: Chapter[] = [];
-  for (let i = 0; i < segments.length; i++) {
-    const [titleHint, text] = segments[i];
-    const metadata = await extractMetadata(text, i + 1);
-    chapters.push({
-      chapter_id: i + 1,
-      title: metadata.title || titleHint || `Chapter ${i + 1}`,
-      raw_text: text,
-      summary: metadata.summary,
-      characters: metadata.characters,
-      world_setting: metadata.world_setting,
-      estimated_reading_time: metadata.estimated_reading_time,
-    });
-  }
-
-  return chapters;
+  return segments;
 }
